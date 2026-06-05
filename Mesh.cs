@@ -22,7 +22,10 @@ public class Mesh
         GL.BindVertexArray(_vao);
 
         GL.BindBuffer(BufferTarget.ArrayBuffer, _vbo);
-        GL.BufferData(BufferTarget.ArrayBuffer,vertices.Length * Marshal.SizeOf<Vertex>(),vertices,BufferUsageHint.StaticDraw);
+        GL.BufferData(
+            BufferTarget.ArrayBuffer,vertices.Length * Marshal.SizeOf<Vertex>(),
+            vertices,
+            BufferUsageHint.StaticDraw);
 
         GL.BindBuffer(
             BufferTarget.ElementArrayBuffer,

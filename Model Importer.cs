@@ -3,21 +3,22 @@ using System.Collections.Generic;
 using System.IO;
 using System.Globalization;
 using OpenTK.Mathematics;
+using Engine.Graphics;
 
 namespace Engine;
 
 public class ObjParser
 {
-    public List<uint> VertexIndices = new List<uint>();
+    List<uint> VertexIndices = new List<uint>();
 
-    public List<Vertex> Vertices = new List<Vertex>();
+    List<Vertex> Vertices = new List<Vertex>();
 
 
     List<Vector3> normals = new List<Vector3>();
     List<Vector3> positions = new List<Vector3>();
     List<Vector2> uv = new List<Vector2>();
 
-    public void LoadObj(string filePath)
+    void Loader(string filePath)
     {
         // Использование InvariantCulture гарантирует, что дробные числа 
         // с точкой (например, 0.5) будут правильно читаться на любом ПК
@@ -78,5 +79,16 @@ public class ObjParser
                 }
             }
         }
+    }
+    public Mesh LoadMesh(string path)
+    {
+        VertexIndices = new List<uint>();
+        Vertices = new List<Vertex>();
+        normals = new List<Vector3>();
+        positions = new List<Vector3>();
+        uv = new List<Vector2>();
+
+        Loader(path);
+        return new Mesh(Vertices.ToArray(), VertexIndices.ToArray());
     }
 }

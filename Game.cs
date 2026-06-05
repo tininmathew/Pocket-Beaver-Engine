@@ -16,7 +16,6 @@ public class Game : GameWindow
     Shader shader;
     Scene mainGame;
     Camera camera = new Camera();
-    GameObject Object;
     float speed;
 
     public Game(GameWindowSettings gameSettings, NativeWindowSettings nativeSettings)
@@ -57,11 +56,13 @@ public class Game : GameWindow
             0, 2, 3]
         );
         ObjParser objParser = new ObjParser();
-        objParser.LoadObj("./models/thing.obj");
-        Mesh cubeMesh = new Mesh(objParser.Vertices.ToArray(), objParser.VertexIndices.ToArray());
-        Object = new GameObject("obj", cubeMesh, mainGame, _scale: new Vector3(10));
+        GameObject map = new GameObject("obj", objParser.LoadMesh("./models/thing.obj"), mainGame, scale: new Vector3(10));
+        map.AddComponent(new Rotater());
+
+        GameObject multiObj = new GameObject("multy", objParser.LoadMesh("./models/multi-object.obj"), mainGame, position: new Vector3(0,5,0));
+
         shader = new Shader();
-        GL.ClearColor(0.1f, 0.1f, 0.2f, 1.0f);
+        GL.ClearColor(Constants.bgColor[0],Constants.bgColor[1],Constants.bgColor[2], Constants.bgColor[3]);
         GL.Enable(EnableCap.DepthTest);
         GL.Enable(EnableCap.CullFace);  
         camera.Position.Y = 3;
@@ -75,9 +76,6 @@ public class Game : GameWindow
 
         //lightPos.Position.X = (float)Math.Sin(e.Time);
         //lightPos.Position.Y = (float)Math.Cos(e.Time);
-
-
-        mainGame.Find("obj").Transform.Rotation.Y += (float)e.Time;
 
         camera.Yaw += MouseState.Delta.X * Constants.MouseSensibility;
         camera.Pitch -= MouseState.Delta.Y * Constants.MouseSensibility;
@@ -133,8 +131,6 @@ public class Game : GameWindow
             Close();
         }
     }
-
-    double anim;
     protected override void OnRenderFrame(FrameEventArgs args)
     {
         base.OnRenderFrame(args);
@@ -146,6 +142,7 @@ public class Game : GameWindow
         foreach(GameObject i in mainGame.List)
         {
             i.Render(shader);
+            i.Update((float)args.Time);
         }
         //render camera
         shader.SetMatrix4("view", camera.GetViewMatrix());

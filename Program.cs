@@ -18,7 +18,7 @@ internal class Program
         {
             Title = Constants.WindowName,
             ClientSize = new OpenTK.Mathematics.Vector2i((int)Constants.ScreenSize.X, (int)Constants.ScreenSize.Y),
-            //WindowState = WindowState.Maximized
+            WindowState = WindowState.Maximized
         };
 
         using var window = new Game(gameSettings, nativeSettings);

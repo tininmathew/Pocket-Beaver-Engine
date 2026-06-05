@@ -58,3 +58,9 @@
 /home/aprold/C#P/PocketBeaver/obj/Debug/net10.0/Engine.pdb
 /home/aprold/C#P/PocketBeaver/obj/Debug/net10.0/Engine.genruntimeconfig.cache
 /home/aprold/C#P/PocketBeaver/obj/Debug/net10.0/ref/Engine.dll
+/home/aprold/C#P/PocketBeaver/obj/Debug/net10.0/Engine.sourcelink.json
+/home/aprold/C#P/PocketBeaver/bin/Debug/net10.0/AssimpNet.dll
+/home/aprold/C#P/PocketBeaver/bin/Debug/net10.0/runtimes/linux-x64/native/libassimp.so
+/home/aprold/C#P/PocketBeaver/bin/Debug/net10.0/runtimes/osx-x64/native/libassimp.dylib
+/home/aprold/C#P/PocketBeaver/bin/Debug/net10.0/runtimes/win-x64/native/assimp.dll
+/home/aprold/C#P/PocketBeaver/bin/Debug/net10.0/runtimes/win-x86/native/assimp.dll
