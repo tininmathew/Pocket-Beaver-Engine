@@ -10,16 +10,23 @@ public struct Vertex
 };
 public struct Submesh
 {
-    public uint[] indices;
-    public int materialID;
-};
-
-public struct Material
+    // Сколько индексов (треугольников * 3) принадлежит этому субмешу
+    public int IndexCount { get; set; }
+    
+    // С какого индекса в общем EBO начинается этот субмеш
+    public int StartIndex { get; set; }
+    
+    // ID или ссылка на материал, которым это красить
+    public int MaterialId { get; set; } 
+}
+public class Material
 {
-    public Vector3 ambient;
-    public Vector3 diffuse;
-    public Vector3 specular;
-    public float roughness;
-    public float alpha;
+    public int ShaderProgramId { get; set; }
+    public Vector3 Color { get; set; } // Основной цвет (RGB)
 
-};
+    public Material(int shaderProgramId, Vector3 color)
+    {
+        ShaderProgramId = shaderProgramId;
+        Color = color;
+    }
+}

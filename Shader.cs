@@ -66,6 +66,11 @@ public class Shader
     {
         GL.UseProgram(_shaderProgram);
     }
+    public void SetFloat(string name, float value)
+    {
+        int location = GL.GetUniformLocation(_shaderProgram, name);
+        GL.Uniform1(location, value);
+    }
     public void SetVector3(string name, Vector3 value)
     {
         int location = GL.GetUniformLocation(_shaderProgram, name);
@@ -77,5 +82,29 @@ public class Shader
         int location = GL.GetUniformLocation(_shaderProgram, name);
 
         GL.UniformMatrix4(location, false, ref matrix);
+    }
+    public void SetVector3Array(string name, Vector3[] value)
+    {
+        float[] floatArray = new float[value.Length * 3];
+        for (int i = 0; i < value.Length; i++)
+        {
+            floatArray[i * 3 + 0] = value[i].X;
+            floatArray[i * 3 + 1] = value[i].Y;
+            floatArray[i * 3 + 2] = value[i].Z;
+        }
+        int location = GL.GetUniformLocation(_shaderProgram, name);
+        GL.Uniform3(location, value.Length, floatArray);
+    }
+    public void SetLights(PointLight[] lights)
+    {
+        SetVector3($"dirLight.transform", DirLight.Rotation);
+        SetVector3($"dirLight.color", DirLight.Color);
+        SetFloat($"dirLight.intensity", DirLight.Intensity);
+        for (int i = 0; i < lights.Length; i++)
+        {
+            SetVector3($"lights[{i}].transform", lights[i].Transform.Position);
+            SetVector3($"lights[{i}].color", lights[i].Color);
+            SetFloat($"lights[{i}].intensity", lights[i].Intensity);
+        }
     }
 }

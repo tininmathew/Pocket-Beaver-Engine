@@ -18,6 +18,9 @@ public class Game : GameWindow
     Camera camera = new Camera();
     float speed;
 
+    PointLight[] lights;
+
+
     public Game(GameWindowSettings gameSettings, NativeWindowSettings nativeSettings)
         : base(gameSettings, nativeSettings)
     {
@@ -27,45 +30,28 @@ public class Game : GameWindow
     {
         base.OnLoad();
         mainGame = new Scene();
-        Mesh quadMesh = new Mesh
-        (
-            //verts
-            [
-                new()
-                {
-                    position = new Vector3(-1f, 1f, 0),
-                    normal = new Vector3(0, 0, 1),
-                },
-                new()
-                {
-                    position = new Vector3(-1f, -1f, 0),
-                    normal = new Vector3(0, 0, 1),
-                },
-                new()
-                {
-                    position = new Vector3(1f, -1f, 0),
-                    normal = new Vector3(0, 0, 1),
-                },
-                new()
-                {
-                    position = new Vector3(1f, 1f, 0),
-                    normal = new Vector3(0, 0, 1),
-                },
-            ],
-            [0, 1, 2,
-            0, 2, 3]
-        );
+        
         ObjParser objParser = new ObjParser();
+        lights = new PointLight[]
+        {
+            new PointLight(new Vector3(10,10,0), new Vector3(1,0,1), 0.15f, "0l", mainGame, objParser.LoadMesh("./models/cube.obj")),
+            new PointLight(new Vector3(0,10,0), new Vector3(1,1,1), 0.5f, "1l", mainGame, objParser.LoadMesh("./models/cube.obj")),
+            new PointLight(new Vector3(10,10,10), new Vector3(0,0,1), 0.25f, "2l", mainGame, objParser.LoadMesh("./models/cube.obj")),
+        };
+        DirLight.Rotation = new Vector3(-0.5f,-1,0);
+        DirLight.Intensity = 0.41f;
+        DirLight.Color = new Vector3(1,1,1);
         GameObject map = new GameObject("obj", objParser.LoadMesh("./models/thing.obj"), mainGame, scale: new Vector3(10));
-        map.AddComponent(new Rotater());
 
         GameObject multiObj = new GameObject("multy", objParser.LoadMesh("./models/multi-object.obj"), mainGame, position: new Vector3(0,5,0));
-
+        multiObj.AddComponent(new Rotater());
+        //multiObj.AddComponent(new SinMover());
+        
         shader = new Shader();
         GL.ClearColor(Constants.bgColor[0],Constants.bgColor[1],Constants.bgColor[2], Constants.bgColor[3]);
         GL.Enable(EnableCap.DepthTest);
         GL.Enable(EnableCap.CullFace);  
-        camera.Position.Y = 3;
+        camera.Position = new Vector3( 0, 5, 5);
         CursorState = CursorState.Grabbed;
         speed = Constants.Speed;
     }
@@ -138,7 +124,7 @@ public class Game : GameWindow
         shader.Use();
 
         //render objects
-        shader.SetVector3("lightPos", camera.Position);
+        shader.SetLights(lights);
         foreach(GameObject i in mainGame.List)
         {
             i.Render(shader);

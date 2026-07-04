@@ -11,9 +11,9 @@ static class Constants
     public static string WindowName = "Pocket-Beaver Engine";
     public static float[] bgColor =
     {
-        0.3f,
-        0.3f,
-        0.3f,
+        0.53f,
+        0.8f,
+        0.921f,
         1.0f
     };
 }

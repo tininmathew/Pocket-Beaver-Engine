@@ -8,12 +8,13 @@ public class Mesh
     private readonly int _vao;
     private readonly int _vbo;
     private readonly int _ebo;
+    
+    // Список всех подмешей
+    private readonly Submesh[] _submeshes;
 
-    private readonly int _indexCount;
-
-    public Mesh(Vertex[] vertices, uint[] indices, nint debug_Offset = 3)
+    public Mesh(Vertex[] vertices, uint[] indices, Submesh[] submeshes)
     {
-        _indexCount = indices.Length;
+        _submeshes = submeshes;
 
         _vao = GL.GenVertexArray();
         _vbo = GL.GenBuffer();
@@ -21,52 +22,48 @@ public class Mesh
 
         GL.BindVertexArray(_vao);
 
+        // Загружаем ВСЕ вершины модели в один VBO
         GL.BindBuffer(BufferTarget.ArrayBuffer, _vbo);
-        GL.BufferData(
-            BufferTarget.ArrayBuffer,vertices.Length * Marshal.SizeOf<Vertex>(),
-            vertices,
-            BufferUsageHint.StaticDraw);
+        GL.BufferData(BufferTarget.ArrayBuffer, vertices.Length * Marshal.SizeOf<Vertex>(), vertices, BufferUsageHint.StaticDraw);
 
-        GL.BindBuffer(
-            BufferTarget.ElementArrayBuffer,
-            _ebo);
+        // Загружаем ВСЕ индексы модели в один EBO
+        GL.BindBuffer(BufferTarget.ElementArrayBuffer, _ebo);
+        GL.BufferData(BufferTarget.ElementArrayBuffer, indices.Length * sizeof(uint), indices, BufferUsageHint.StaticDraw);
 
-        GL.BufferData(
-            BufferTarget.ElementArrayBuffer,
-            indices.Length * sizeof(uint),
-            indices,
-            BufferUsageHint.StaticDraw);
-
-        GL.VertexAttribPointer(
-            0,
-            3,
-            VertexAttribPointerType.Float,
-            false,
-            Marshal.SizeOf<Vertex>(),
-            0);
-
+        // Настройка атрибутов (остается как у вас)
+        GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, Marshal.SizeOf<Vertex>(), 0);
         GL.EnableVertexAttribArray(0);
-        GL.VertexAttribPointer(
-            1,
-            3,
-            VertexAttribPointerType.Float,
-            false,
-            Marshal.SizeOf<Vertex>(),
-            3 * sizeof(float));
 
+        GL.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, Marshal.SizeOf<Vertex>(), 3 * sizeof(float));
         GL.EnableVertexAttribArray(1);
 
         GL.BindVertexArray(0);
     }
 
-    public void Draw()
+    // Теперь методу Draw нужно знать про систему материалов вашего движка,
+    // либо вы можете просто вызывать рендер конкретного субмеша
+    public void Draw(/*MaterialManager materialManager*/)
     {
         GL.BindVertexArray(_vao);
 
-        GL.DrawElements(
-            PrimitiveType.Triangles,
-            _indexCount,
-            DrawElementsType.UnsignedInt,
-            0);
+        foreach (var submesh in _submeshes)
+        {
+            // 1. Включаем материал для текущего субмеша (активируем шейдер, текстуры)
+            //materialManager.UseMaterial(submesh.MaterialId);
+
+            // 2. Считаем смещение в байтах внутри EBO
+            // Системный указатель должен указывать на байт, с которого начинается сабмеш
+            nint pointerOffset = (nint)(submesh.StartIndex * sizeof(uint));
+
+            // 3. Рисуем только часть индексов
+            GL.DrawElements(
+                PrimitiveType.Triangles,
+                submesh.IndexCount,          // Сколько индексов нарисовать
+                DrawElementsType.UnsignedInt,
+                pointerOffset                // Откуда начать в EBO (в байтах!)
+            );
+        }
+
+        GL.BindVertexArray(0);
     }
 }

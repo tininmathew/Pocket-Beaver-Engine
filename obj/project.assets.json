@@ -490,11 +490,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/home/aprold/C#P/PocketBeaver/Engine.csproj",
+      "projectUniqueName": "/mnt/data/C#P/PocketBeaver/Engine.csproj",
       "projectName": "Engine",
-      "projectPath": "/home/aprold/C#P/PocketBeaver/Engine.csproj",
+      "projectPath": "/mnt/data/C#P/PocketBeaver/Engine.csproj",
       "packagesPath": "/home/aprold/.nuget/packages/",
-      "outputPath": "/home/aprold/C#P/PocketBeaver/obj/",
+      "outputPath": "/mnt/data/C#P/PocketBeaver/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "/home/aprold/.nuget/NuGet/NuGet.Config"

@@ -9,9 +9,6 @@ internal class Program
 {
     static void Main()
     {
-        Console.WriteLine(Marshal.SizeOf<Vector3>());
-        Console.WriteLine(Marshal.SizeOf<Vertex>());
-
         var gameSettings = GameWindowSettings.Default;
 
         var nativeSettings = new NativeWindowSettings()

@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "ofSaglK3nCI=",
+  "dgSpecHash": "S8Du/LLE5MY=",
   "success": true,
-  "projectFilePath": "/home/aprold/C#P/PocketBeaver/Engine.csproj",
+  "projectFilePath": "/mnt/data/C#P/PocketBeaver/Engine.csproj",
   "expectedPackageFiles": [
     "/home/aprold/.nuget/packages/assimpnet/4.1.0/assimpnet.4.1.0.nupkg.sha512",
     "/home/aprold/.nuget/packages/microsoft.netcore.platforms/1.1.0/microsoft.netcore.platforms.1.1.0.nupkg.sha512",
