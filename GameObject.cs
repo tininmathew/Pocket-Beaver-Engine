@@ -1,4 +1,3 @@
-using Engine.Graphics;
 using OpenTK.Mathematics;
 
 namespace Engine;

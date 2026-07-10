@@ -6,7 +6,7 @@ public struct Vertex
 {
     public Vector3 position;
     public Vector3 normal;
-    //public Vector2 uv;
+    public Vector2 uv;
 };
 public struct Submesh
 {
@@ -21,12 +21,17 @@ public struct Submesh
 }
 public class Material
 {
-    public int ShaderProgramId { get; set; }
-    public Vector3 Color { get; set; } // Основной цвет (RGB)
+    public string Name;
+    public Vector3 Diffuse { get; set; }
+    public Vector3 Ambient { get; set; }
+    public Vector3 Specular { get; set; }
+    public Texture? DiffuseMap { get; set; }
+    public float Transparency { get; set; }
 
-    public Material(int shaderProgramId, Vector3 color)
+    public Material(string name)
     {
-        ShaderProgramId = shaderProgramId;
-        Color = color;
+        Name = name;
+        Diffuse = Vector3.One;
+        Transparency = 1;
     }
 }

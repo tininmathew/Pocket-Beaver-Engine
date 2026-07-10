@@ -3,6 +3,7 @@ namespace Engine;
 public class Scene
 {
     public List<GameObject> List {get;set;} = new List<GameObject>();
+    public static Shader shader;
 
     public void Add(GameObject toAdd)
     {
