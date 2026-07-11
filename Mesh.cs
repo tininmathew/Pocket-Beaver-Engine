@@ -56,6 +56,12 @@ public class Mesh
             Scene.shader.SetVector3("ambient", materials[submesh.MaterialId].Ambient);
             Scene.shader.SetVector3("specular", materials[submesh.MaterialId].Specular);
             Scene.shader.SetFloat("alpha", materials[submesh.MaterialId].Transparency);
+            if(materials[submesh.MaterialId].Texture != -1)
+            {
+                int handle = materials[submesh.MaterialId].Texture;
+                GL.ActiveTexture(TextureUnit.Texture0);
+                GL.BindTexture(TextureTarget.Texture2D, handle);
+            }
             
             // 3. Рисуем только часть индексов
             GL.DrawElements(

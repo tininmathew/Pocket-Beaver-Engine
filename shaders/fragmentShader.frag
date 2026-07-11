@@ -14,6 +14,7 @@ uniform vec3 diffuse;
 uniform vec3 ambient;
 uniform vec3 specular;
 uniform float alpha;
+uniform sampler2D texture0;
 
 uniform vec3 viewPos;
 
@@ -50,5 +51,5 @@ void main() {
     vec3 finalDiffuse = totalDiffuse * diffuse;
     vec3 finalSpecular = totalSpecular * specular;
     vec3 result = totalAmbient + finalDiffuse + finalSpecular;
-    FragColor = vec4(clamp(result, 0.0, 1.0), alpha);
+    FragColor = vec4(result , alpha) * texture(texture0, texCoord); 
 }

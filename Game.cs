@@ -46,7 +46,7 @@ public class Game : GameWindow
         DirLight.Rotation = new Vector3(-0.5f,-1,0);
         DirLight.Intensity = 0.41f;
         DirLight.Color = new Vector3(1,1,1);
-        GameObject map = new GameObject("obj", objParser.LoadMesh("./models/field.obj"), mainGame, scale: new Vector3(10));
+        GameObject map = new GameObject("plane", objParser.LoadMesh("./models/textureField.obj"), mainGame, scale: new Vector3(10));
 
         GameObject multiObj = new GameObject("multy", objParser.LoadMesh("./models/multi-object.obj"), mainGame, position: new Vector3(0,5,0));
         

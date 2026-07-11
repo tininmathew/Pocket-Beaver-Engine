@@ -26,11 +26,13 @@ public class Material
     public Vector3 Ambient { get; set; }
     public Vector3 Specular { get; set; }
     public float Transparency { get; set; }
+    public int Texture { get; set; }
 
     public Material(string name)
     {
         Name = name;
         Diffuse = Vector3.One;
         Transparency = 1;
+        Texture = TextureLoader.LoadTexture("/mnt/data/C#P/PocketBeaver/resources/fallback texture.bmp");
     }
 }

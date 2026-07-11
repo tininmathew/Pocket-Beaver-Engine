@@ -61,6 +61,9 @@ public class Shader
 
         GL.DeleteShader(vertexShader);
         GL.DeleteShader(fragmentShader);
+        
+        int location = GL.GetUniformLocation(_shaderProgram, "texture0");
+        GL.Uniform1(location, 0); 
     }
     internal void Use()
     {

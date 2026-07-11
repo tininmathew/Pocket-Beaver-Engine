@@ -231,9 +231,9 @@ public class ObjParser
                     if (currentMaterial != null) currentMaterial.Transparency = float.Parse(parts[1], CultureInfo.InvariantCulture);
                     break;
 
-                // case "map_Kd":
-                //     if (currentMaterial != null) currentMaterial.DiffuseMap = new Texture(parts[1]);
-                //     break;
+                case "map_kd":
+                    if (currentMaterial != null) currentMaterial.Texture = TextureLoader.LoadTexture(parts[1]);
+                    break;
             }
         }
 

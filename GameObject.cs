@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using OpenTK.Mathematics;
 
 namespace Engine;
@@ -22,6 +23,11 @@ List<Script>? comps = null)
         {
             i.Set(this, scene);
             i.Start();
+        }
+        if(Mesh == null) return;
+        foreach(Material i in Mesh.materials)
+        {
+            Console.WriteLine($"{Name}:\"{i.Texture}\"");
         }
     }
     public string Name { get; set; }
