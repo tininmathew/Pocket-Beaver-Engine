@@ -1,7 +1,7 @@
 using OpenTK.Graphics.OpenGL4;
 using System.Runtime.InteropServices;
 
-namespace Engine.Graphics;
+namespace Engine;
 
 public class Mesh
 {
@@ -10,11 +10,14 @@ public class Mesh
     private readonly int _ebo;
     
     // Список всех подмешей
-    private readonly Submesh[] _submeshes;
+    public readonly Submesh[] submeshes;
+    public readonly Material[] materials;
 
-    public Mesh(Vertex[] vertices, uint[] indices, Submesh[] submeshes)
+
+    public Mesh(Vertex[] vertices, uint[] indices, Submesh[] _submeshes, Material[] _materials)
     {
-        _submeshes = submeshes;
+        submeshes = _submeshes;
+        materials = _materials;
 
         _vao = GL.GenVertexArray();
         _vbo = GL.GenBuffer();
@@ -37,24 +40,23 @@ public class Mesh
         GL.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, Marshal.SizeOf<Vertex>(), 3 * sizeof(float));
         GL.EnableVertexAttribArray(1);
 
+        GL.VertexAttribPointer(2, 2, VertexAttribPointerType.Float, false, Marshal.SizeOf<Vertex>(), 6 * sizeof(float));
+        GL.EnableVertexAttribArray(2);
+
         GL.BindVertexArray(0);
     }
-
-    // Теперь методу Draw нужно знать про систему материалов вашего движка,
-    // либо вы можете просто вызывать рендер конкретного субмеша
     public void Draw(/*MaterialManager materialManager*/)
     {
         GL.BindVertexArray(_vao);
 
-        foreach (var submesh in _submeshes)
+        foreach (var submesh in submeshes)
         {
-            // 1. Включаем материал для текущего субмеша (активируем шейдер, текстуры)
-            //materialManager.UseMaterial(submesh.MaterialId);
-
-            // 2. Считаем смещение в байтах внутри EBO
-            // Системный указатель должен указывать на байт, с которого начинается сабмеш
             nint pointerOffset = (nint)(submesh.StartIndex * sizeof(uint));
-
+            Scene.shader.SetVector3("diffuse", materials[submesh.MaterialId].Diffuse);
+            Scene.shader.SetVector3("ambient", materials[submesh.MaterialId].Ambient);
+            Scene.shader.SetVector3("specular", materials[submesh.MaterialId].Specular);
+            Scene.shader.SetFloat("alpha", materials[submesh.MaterialId].Transparency);
+            
             // 3. Рисуем только часть индексов
             GL.DrawElements(
                 PrimitiveType.Triangles,

@@ -74,7 +74,6 @@ public class Shader
     public void SetVector3(string name, Vector3 value)
     {
         int location = GL.GetUniformLocation(_shaderProgram, name);
-
         GL.Uniform3(location, value.X, value.Y, value.Z);
     }
     public void SetMatrix4(string name,Matrix4 matrix)

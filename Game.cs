@@ -6,7 +6,6 @@ using OpenTK.Windowing.GraphicsLibraryFramework;
 using OpenTK.Input;
 using System;
 using System.IO;
-using Engine.Graphics;
 using System.Drawing;
 
 namespace Engine;
@@ -30,38 +29,37 @@ public class Game : GameWindow
     {
         base.OnLoad();
         mainGame = new Scene();
+        shader = new Shader();
+        GL.ClearColor(Constants.bgColor[0],Constants.bgColor[1],Constants.bgColor[2], Constants.bgColor[3]);
+        GL.Enable(EnableCap.DepthTest);
+        GL.Enable(EnableCap.CullFace); 
+        GL.Enable(EnableCap.Blend);
+        GL.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
+ 
+        Scene.shader = shader;
         
         ObjParser objParser = new ObjParser();
         lights = new PointLight[]
         {
-            new PointLight(new Vector3(10,10,0), new Vector3(1,0,1), 0.15f, "0l", mainGame, objParser.LoadMesh("./models/cube.obj")),
-            new PointLight(new Vector3(0,10,0), new Vector3(1,1,1), 0.5f, "1l", mainGame, objParser.LoadMesh("./models/cube.obj")),
-            new PointLight(new Vector3(10,10,10), new Vector3(0,0,1), 0.25f, "2l", mainGame, objParser.LoadMesh("./models/cube.obj")),
+            new PointLight(new Vector3(0,10,0), new Vector3(1,1,1), 1f, "1l", mainGame, objParser.LoadMesh("./models/cube.obj")),
         };
         DirLight.Rotation = new Vector3(-0.5f,-1,0);
         DirLight.Intensity = 0.41f;
         DirLight.Color = new Vector3(1,1,1);
-        GameObject map = new GameObject("obj", objParser.LoadMesh("./models/thing.obj"), mainGame, scale: new Vector3(10));
+        GameObject map = new GameObject("obj", objParser.LoadMesh("./models/field.obj"), mainGame, scale: new Vector3(10));
 
         GameObject multiObj = new GameObject("multy", objParser.LoadMesh("./models/multi-object.obj"), mainGame, position: new Vector3(0,5,0));
-        multiObj.AddComponent(new Rotater());
-        //multiObj.AddComponent(new SinMover());
         
-        shader = new Shader();
-        GL.ClearColor(Constants.bgColor[0],Constants.bgColor[1],Constants.bgColor[2], Constants.bgColor[3]);
-        GL.Enable(EnableCap.DepthTest);
-        GL.Enable(EnableCap.CullFace);  
         camera.Position = new Vector3( 0, 5, 5);
         CursorState = CursorState.Grabbed;
         speed = Constants.Speed;
+
+        
     }
 
     protected override void OnUpdateFrame(FrameEventArgs e)
     {
         base.OnUpdateFrame(e);
-
-        //lightPos.Position.X = (float)Math.Sin(e.Time);
-        //lightPos.Position.Y = (float)Math.Cos(e.Time);
 
         camera.Yaw += MouseState.Delta.X * Constants.MouseSensibility;
         camera.Pitch -= MouseState.Delta.Y * Constants.MouseSensibility;
@@ -132,6 +130,7 @@ public class Game : GameWindow
         }
         //render camera
         shader.SetMatrix4("view", camera.GetViewMatrix());
+        shader.SetVector3("viewPos", camera.Position);
         Matrix4 projection = Matrix4.CreatePerspectiveFieldOfView
         (
             MathHelper.DegreesToRadians(70f),

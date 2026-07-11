@@ -3,30 +3,29 @@ using System.Collections.Generic;
 using System.IO;
 using System.Globalization;
 using OpenTK.Mathematics;
-using Engine.Graphics;
 
 namespace Engine;
 
 public class ObjParser
 {
-    private List<uint> VertexIndices = new List<uint>();
-    private List<Vertex> Vertices = new List<Vertex>();
-    private List<Vector3> normals = new List<Vector3>();
-    private List<Vector3> positions = new List<Vector3>();
+    private List<uint> VertexIndices = new();
+    private List<Vertex> Vertices = new();
+    private List<Vector3> normals = new();
+    private List<Vector3> positions = new();
+    public List<Vector2> UVs = new();
 
-    // Список для накопления субмешей
-    private List<Submesh> Submeshes = new List<Submesh>();
+    private List<Submesh> Submeshes = new();
     
-    // Перевод текстовых имен материалов из .obj в числовые ID для движка
-    private Dictionary<string, int> MaterialNameToId = new Dictionary<string, int>();
+    // Храним маппинг ИмяМатериала -> ID для синхронизации
+    private Dictionary<string, int> MaterialNameToId = new();
     private int _nextMaterialId = 0;
 
-    // Временные переменные для сборки текущего субмеша прямо во время чтения файла
-    private int _currentMaterialId = -1;
+    private int _currentMaterialId = -1; // Изначально -1 (нет материала)
     private int _currentSubmeshStartIndex = 0;
     private int _currentSubmeshIndexCount = 0;
+    private string pathToMtl = "";
 
-    void Loader(string filePath)
+    private void Loader(string filePath)
     {
         CultureInfo culture = CultureInfo.InvariantCulture;
 
@@ -40,79 +39,124 @@ public class ObjParser
                 if (line == "" || line.StartsWith("#"))
                     continue;
 
-                string[] parts = line.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                string[] parts = line.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                if (parts.Length == 0) continue;
+
                 string type = parts[0];
                 switch (type)
                 {
-                    case "vn":
-                        float xn = float.Parse(parts[1], culture);
-                        float yn = float.Parse(parts[2], culture);
-                        float zn = float.Parse(parts[3], culture);
-                        normals.Add(new Vector3(xn, yn, zn));
+                    case "mtllib":
+                        // Корректное объединение путей для любых ОС
+                        pathToMtl = Path.Combine(Path.GetDirectoryName(filePath) ?? "", parts[1]);
                         break;
+
+                    case "vn":
+                        normals.Add(new Vector3(
+                            float.Parse(parts[1], culture),
+                            float.Parse(parts[2], culture),
+                            float.Parse(parts[3], culture)
+                        ));
+                        break;
+
                     case "v":
-                        float x = float.Parse(parts[1], culture);
-                        float y = float.Parse(parts[2], culture);
-                        float z = float.Parse(parts[3], culture);
-                        positions.Add(new Vector3(x, y, z));
+                        positions.Add(new Vector3(
+                            float.Parse(parts[1], culture),
+                            float.Parse(parts[2], culture),
+                            float.Parse(parts[3], culture)
+                        ));
+                        break;
+                    case "vt":
+                            UVs.Add(new Vector2(
+                                float.Parse(parts[1], culture),
+                                float.Parse(parts[2], culture)
+                            ));
                         break;
 
                     case "usemtl":
                         string matName = parts[1];
 
-                        // Если мы уже что-то читали для предыдущего материала, сохраняем этот субмеш
+                        // Сохраняем предыдущий субмеш, если в нем были полигоны
                         EndCurrentSubmesh();
 
-                        // Получаем или создаем числовой ID для этого материала
+                        // Регистрируем материал, если встретили впервые
                         if (!MaterialNameToId.TryGetValue(matName, out int matId))
                         {
                             matId = _nextMaterialId++;
                             MaterialNameToId[matName] = matId;
                         }
 
-                        // Настраиваем параметры для начала НОВОГО субмеша
                         _currentMaterialId = matId;
-                        _currentSubmeshStartIndex = VertexIndices.Count; // Начинается с текущего конца списка индексов
-                        _currentSubmeshIndexCount = 0;                  // Пока в нем 0 индексов
+                        _currentSubmeshStartIndex = VertexIndices.Count;
+                        _currentSubmeshIndexCount = 0;
                         break;
 
                     case "f":
-                        // Если в файле по какой-то причине пошли грани ДО первого usemtl, 
-                        // создаем дефолтный субмеш с ID = 0, чтобы программа не упала
+                        // Защита: если полигоны идут до usemtl
                         if (_currentMaterialId == -1)
                         {
-                            _currentMaterialId = 0;
+                            string defaultMat = "default_material";
+                            if (!MaterialNameToId.TryGetValue(defaultMat, out _currentMaterialId))
+                            {
+                                _currentMaterialId = _nextMaterialId++;
+                                MaterialNameToId[defaultMat] = _currentMaterialId;
+                            }
                             _currentSubmeshStartIndex = 0;
                             _currentSubmeshIndexCount = 0;
                         }
+
+                        // Поддержка триангуляции на лету (для полигонов с > 3 вершинами)
+                        // Разбиваем веером (Fan Triangulation): вершины (1, 2, 3), (1, 3, 4), (1, 4, 5)...
+                        List<uint> faceIndices = new List<uint>();
 
                         for (int i = 1; i < parts.Length; i++)
                         {
                             string[] data = parts[i].Split('/');
 
-                            int posIndex = int.Parse(data[0]) - 1;
-                            int normIndex = int.Parse(data[2]) - 1;
+                            int posIndex = int.Parse(data[0]);
+                            // Обработка отрицательных индексов OBJ и приведение к 0-based
+                            posIndex = posIndex < 0 ? positions.Count + posIndex : posIndex - 1;
 
-                            Vertex vertex = new();
-                            vertex.position = positions[posIndex];
-                            vertex.normal = normals[normIndex];
+                            int UVIndex = -1;
+                            if (data.Length > 1 && !string.IsNullOrEmpty(data[1]))
+                            {
+                                UVIndex = int.Parse(data[1]);
+                                UVIndex = UVIndex < 0 ? UVs.Count + UVIndex : UVIndex - 1;
+                            }
+                            int normIndex = -1;
+                            if (data.Length > 2 && !string.IsNullOrEmpty(data[2]))
+                            {
+                                normIndex = int.Parse(data[2]);
+                                normIndex = normIndex < 0 ? normals.Count + normIndex : normIndex - 1;
+                            }
+                            
+
+                            Vertex vertex = new Vertex
+                            {
+                                position = positions[posIndex],
+                                normal = normIndex != -1 ? normals[normIndex] : Vector3.UnitY, // Дефолтная нормаль
+                                uv = UVIndex!=-1 ? UVs[UVIndex] : Vector2.Zero
+                            };
 
                             Vertices.Add(vertex);
-                            VertexIndices.Add((uint)(Vertices.Count - 1));
+                            faceIndices.Add((uint)(Vertices.Count - 1));
+                        }
 
-                            // Увеличиваем счетчик индексов для ТЕКУЩЕГО субмеша
-                            _currentSubmeshIndexCount++;
+                        // Добавляем индексы в буфер в виде треугольников
+                        for (int i = 1; i < faceIndices.Count - 1; i++)
+                        {
+                            VertexIndices.Add(faceIndices[0]);
+                            VertexIndices.Add(faceIndices[i]);
+                            VertexIndices.Add(faceIndices[i + 1]);
+                            _currentSubmeshIndexCount += 3;
                         }
                         break;
                 }
             }
 
-            // Не забываем сохранить самый последний субмеш после выхода из цикла чтения файла
             EndCurrentSubmesh();
         }
     }
 
-    // Вспомогательный метод: запечатывает текущий субмеш и добавляет его в список
     private void EndCurrentSubmesh()
     {
         if (_currentSubmeshIndexCount > 0)
@@ -127,21 +171,121 @@ public class ObjParser
         }
     }
 
+    // Изменено: Передаем Dictionary для синхронизации ID по имени
+    private static Material[] LoadMTL(string filePath, Dictionary<string, int> materialNameToId)
+    {
+        if (!File.Exists(filePath))
+        {
+            // Если MTL нет, создаем массив заглушек на основе найденных в OBJ имен
+            Material[] fallbacks = new Material[materialNameToId.Count];
+            foreach (var kvp in materialNameToId)
+            {
+                fallbacks[kvp.Value] = new Material(kvp.Key);
+            }
+            return fallbacks;
+        }
+
+        // Выделяем массив под точное количество материалов, найденных в OBJ
+        Material[] materials = new Material[materialNameToId.Count];
+        Material currentMaterial = null;
+        int currentId = -1;
+
+        foreach (var line in File.ReadLines(filePath))
+        {
+            var trimmedLine = line.Trim();
+            if (string.IsNullOrWhiteSpace(trimmedLine) || trimmedLine.StartsWith("#"))
+                continue;
+
+            var parts = trimmedLine.Split(new[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
+            if (parts.Length == 0) continue;
+
+            switch (parts[0].ToLower())
+            {
+                case "newmtl":
+                    string matName = parts[1];
+                    // Проверяем, используется ли этот материал в OBJ
+                    if (materialNameToId.TryGetValue(matName, out currentId))
+                    {
+                        currentMaterial = new Material(matName);
+                        materials[currentId] = currentMaterial;
+                    }
+                    else
+                    {
+                        currentMaterial = null; // Пропускаем, если в OBJ его нет
+                    }
+                    break;
+
+                case "ka":
+                    if (currentMaterial != null) currentMaterial.Ambient = ParseVector3(parts);
+                    break;
+
+                case "kd":
+                    if (currentMaterial != null) currentMaterial.Diffuse = ParseVector3(parts);
+                    break;
+
+                case "ks":
+                    if (currentMaterial != null) currentMaterial.Specular = ParseVector3(parts);
+                    break;
+
+                case "d":
+                    if (currentMaterial != null) currentMaterial.Transparency = float.Parse(parts[1], CultureInfo.InvariantCulture);
+                    break;
+
+                // case "map_Kd":
+                //     if (currentMaterial != null) currentMaterial.DiffuseMap = new Texture(parts[1]);
+                //     break;
+            }
+        }
+
+        // Заполняем пропуски дефолтными материалами (если в MTL не было описания)
+        foreach (var kvp in materialNameToId)
+        {
+            if (materials[kvp.Value] == null)
+            {
+                materials[kvp.Value] = new Material(kvp.Value == 0 ? "default_material" : kvp.Key);
+            }
+        }
+
+        return materials;
+    }
+
+    private static Vector3 ParseVector3(string[] parts)
+    {
+        return new Vector3
+        (
+            float.Parse(parts[1], CultureInfo.InvariantCulture),
+            float.Parse(parts[2], CultureInfo.InvariantCulture),
+            float.Parse(parts[3], CultureInfo.InvariantCulture)
+        );
+    }
+
     public Mesh LoadMesh(string path)
     {
-        VertexIndices = new List<uint>();
-        Vertices = new List<Vertex>();
-        normals = new List<Vector3>();
-        positions = new List<Vector3>();
+        // Полный сброс состояния для повторного использования парсера
+        VertexIndices.Clear();
+        Vertices.Clear();
+        normals.Clear();
+        positions.Clear();
+        UVs.Clear();
+        Submeshes.Clear();
+        MaterialNameToId.Clear();
         
-        Submeshes = new List<Submesh>();
-        MaterialNameToId = new Dictionary<string, int>();
         _nextMaterialId = 0;
-        _currentMaterialId = -1;
+        _currentMaterialId = -1; 
+        _currentSubmeshStartIndex = 0;
+        _currentSubmeshIndexCount = 0;
+        pathToMtl = "";
 
         Loader(path);
+        
+        // Передаем карту имен в LoadMTL для строгого соответствия индексов
+        Material[] materials = LoadMTL(pathToMtl, MaterialNameToId); 
 
-        // Передаем в ваш обновленный Mesh массивы вершин, индексов и сгенерированных субмешей
-        return new Mesh(Vertices.ToArray(), VertexIndices.ToArray(), Submeshes.ToArray());
+        return new Mesh(
+            Vertices.ToArray(), 
+            VertexIndices.ToArray(), 
+            Submeshes.ToArray(), 
+            materials
+        );
     }
 }
