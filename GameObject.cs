@@ -21,14 +21,10 @@ List<Script>? comps = null)
         Components = comps??new List<Script>();
         foreach(Script i in Components)
         {
-            i.Set(this, scene);
+            i.Set(this, currentScene);
             i.Start();
         }
         if(Mesh == null) return;
-        foreach(Material i in Mesh.materials)
-        {
-            Console.WriteLine($"{Name}:\"{i.Texture}\"");
-        }
     }
     public string Name { get; set; }
     public Mesh? Mesh { get; set; }

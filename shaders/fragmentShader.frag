@@ -1,5 +1,7 @@
 #version 330 core
 
+#define P_LIGHT_COUNT 1
+
 struct Light {
     vec3 transform;
     vec3 color;
@@ -18,7 +20,7 @@ uniform sampler2D texture0;
 
 uniform vec3 viewPos;
 
-uniform Light lights[3];
+uniform Light lights[P_LIGHT_COUNT];
 uniform Light dirLight;
 
 out vec4 FragColor;
@@ -30,7 +32,7 @@ void main() {
     vec3 totalDiffuse = vec3(0.0);
     vec3 totalSpecular = vec3(0.0);
 
-    for (int i = 0; i < 3; i++) {
+    for (int i = 0; i < P_LIGHT_COUNT; i++) {
         vec3 lightDir = normalize(lights[i].transform - FragPos);
         float diffFactor = max(dot(norm, lightDir), 0.0);
         totalDiffuse += lights[i].color * diffFactor * lights[i].intensity;

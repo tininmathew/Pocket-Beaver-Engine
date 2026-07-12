@@ -6,6 +6,7 @@ public abstract class Script
     {
         gameObject = go;
         scene = sc;
+        Console.WriteLine(go.Name);
     }
     protected GameObject gameObject;
     protected Scene scene;

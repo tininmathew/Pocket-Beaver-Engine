@@ -232,7 +232,13 @@ public class ObjParser
                     break;
 
                 case "map_kd":
-                    if (currentMaterial != null) currentMaterial.Texture = TextureLoader.LoadTexture(parts[1]);
+                    string fullPath = "";
+                    for(int i = 1; i < parts.Length; i++)
+                    {
+                        fullPath += parts[i];
+                        if(i != parts.Length-1) fullPath += " ";
+                    }
+                    if (currentMaterial != null) currentMaterial.Texture = TextureLoader.LoadTexture(fullPath);
                     break;
             }
         }

@@ -7,6 +7,7 @@ using OpenTK.Input;
 using System;
 using System.IO;
 using System.Drawing;
+using Engine.Scripts;
 
 namespace Engine;
 
@@ -28,6 +29,7 @@ public class Game : GameWindow
     protected override void OnLoad()
     {
         base.OnLoad();
+        VSync = VSyncMode.On; 
         mainGame = new Scene();
         shader = new Shader();
         GL.ClearColor(Constants.bgColor[0],Constants.bgColor[1],Constants.bgColor[2], Constants.bgColor[3]);
@@ -41,14 +43,18 @@ public class Game : GameWindow
         ObjParser objParser = new ObjParser();
         lights = new PointLight[]
         {
-            new PointLight(new Vector3(0,10,0), new Vector3(1,1,1), 1f, "1l", mainGame, objParser.LoadMesh("./models/cube.obj")),
+            new PointLight(new Vector3(0,10,0), new Vector3(1,1,1), 1f, "1l", mainGame, objParser.LoadMesh("./models/quad.obj")),
         };
         DirLight.Rotation = new Vector3(-0.5f,-1,0);
         DirLight.Intensity = 0.41f;
         DirLight.Color = new Vector3(1,1,1);
         GameObject map = new GameObject("plane", objParser.LoadMesh("./models/textureField.obj"), mainGame, scale: new Vector3(10));
 
-        GameObject multiObj = new GameObject("multy", objParser.LoadMesh("./models/multi-object.obj"), mainGame, position: new Vector3(0,5,0));
+        //GameObject multiObj = new GameObject("multy", objParser.LoadMesh("./models/multi-object.obj"), mainGame, position: new Vector3(0,5,0));
+
+        GameObject icon = new GameObject("icon", objParser.LoadMesh("./models/quad.obj"), mainGame, position: new Vector3(0,7,0));
+        icon.AddComponent(new Rotater());
+        icon.AddComponent(new OverrideTexture("resources/code.png", 0));
         
         camera.Position = new Vector3( 0, 5, 5);
         CursorState = CursorState.Grabbed;
@@ -63,6 +69,7 @@ public class Game : GameWindow
 
         camera.Yaw += MouseState.Delta.X * Constants.MouseSensibility;
         camera.Pitch -= MouseState.Delta.Y * Constants.MouseSensibility;
+        speed = speed + MouseState.ScrollDelta.Y;
         camera.UpdateVectors();
 
         KeysCheck((float)e.Time);

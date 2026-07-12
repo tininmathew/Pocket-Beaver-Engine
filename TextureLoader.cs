@@ -23,7 +23,12 @@ public static class TextureLoader
         // Переворачиваем картинку по вертикали (OpenGL отсчитывает Y снизу вверх)
         StbImage.stbi_set_flip_vertically_on_load(1);
 
-        
+        if(!File.Exists(path)) 
+        {
+            path = "resources/fallback texture error.bmp";
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Nearest);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
+        }
 
         // 4. Загружаем пиксели из файла в оперативную память
         using (Stream stream = File.OpenRead(path))
