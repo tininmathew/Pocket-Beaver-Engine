@@ -4,6 +4,7 @@ public class Scene
 {
     public List<GameObject> List {get;set;} = new List<GameObject>();
     public static Shader shader;
+    private List<GameObject> _objectsToRemove = new List<GameObject>();
 
     public void Add(GameObject toAdd)
     {
@@ -50,5 +51,31 @@ public class Scene
             Console.WriteLine("Error: Object not found!");
             return List[0];
         }
+    }
+
+    public void Destroy(GameObject gameObject)
+    {
+        if (gameObject != null && !_objectsToRemove.Contains(gameObject))
+        {
+            _objectsToRemove.Add(gameObject);
+        }
+    }
+
+    public void Cleanup()
+    {
+        Console.WriteLine("Cleanup()");
+        if (_objectsToRemove.Count == 0) return;
+
+        foreach (var obj in _objectsToRemove)
+        {
+            // 1. Удаляем из основного списка сцены
+            List.Remove(obj);
+
+            // 2. Освобождаем текстуры, VBO, VAO
+            obj.Dispose(); 
+        }
+
+        // Очищаем буфер удаления
+        _objectsToRemove.Clear();
     }
 }

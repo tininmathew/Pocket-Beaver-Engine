@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 
 namespace Engine;
 
-public class Mesh
+public class Mesh : IDisposable
 {
     private readonly int _vao;
     private readonly int _vbo;
@@ -12,6 +12,7 @@ public class Mesh
     // Список всех подмешей
     public readonly Submesh[] submeshes;
     public readonly Material[] materials;
+    private bool _disposed = false;
 
 
     public Mesh(Vertex[] vertices, uint[] indices, Submesh[] _submeshes, Material[] _materials)
@@ -73,5 +74,32 @@ public class Mesh
         }
 
         GL.BindVertexArray(0);
+    }
+
+
+    //dispose logic:
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+    protected virtual void Dispose(bool disposing)
+    {
+        if (!_disposed)
+        {
+            // Важно: удаление ресурсов OpenGL должно происходить в главном потоке рендеринга!
+            GL.DeleteVertexArray(_vao);
+            GL.DeleteBuffer(_vbo);
+            GL.DeleteBuffer(_ebo);
+
+            _disposed = true;
+        }
+    }
+
+    ~Mesh()
+    {
+        // Предупреждение: OpenGL команды здесь могут вызвать краш, 
+        // если финализатор вызовется из другого потока.
+        // Поэтому всегда вызывайте Dispose вручную.
     }
 }

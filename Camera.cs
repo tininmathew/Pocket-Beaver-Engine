@@ -13,6 +13,12 @@ public class Camera
     public Vector3 Front { get; private set; }
     public Vector3 Right { get; private set; }
     public Vector3 Up { get; private set; }
+    public Matrix4 Projection = Matrix4.CreatePerspectiveFieldOfView
+    (
+        MathHelper.DegreesToRadians(70f),
+        Constants.ScreenSize.X / Constants.ScreenSize.Y,
+        0.1f,100f
+    );
 
     public Matrix4 GetViewMatrix()
     {

@@ -17,6 +17,7 @@ public class Game : GameWindow
     Scene mainGame;
     Camera camera = new Camera();
     float speed;
+    ObjParser objParser;
 
     PointLight[] lights;
 
@@ -40,7 +41,7 @@ public class Game : GameWindow
  
         Scene.shader = shader;
         
-        ObjParser objParser = new ObjParser();
+        objParser = new ObjParser();
         lights = new PointLight[]
         {
             new PointLight(new Vector3(0,10,0), new Vector3(1,1,1), 1f, "1l", mainGame, objParser.LoadMesh("./models/quad.obj")),
@@ -121,6 +122,14 @@ public class Game : GameWindow
         {
             Close();
         }
+        if(input.IsKeyDown(Keys.R))
+        {
+            Ray ray = Raycaster.GetRayFromScreen(Constants.ScreenSize.X/2, Constants.ScreenSize.Y/2, camera.GetViewMatrix(), camera.Projection, camera.Position);
+            ray.Direction *= 5;
+            Random random = new Random();
+            GameObject a = new GameObject(random.Next().ToString(), objParser.LoadMesh("models/cube.obj"), mainGame, position: ray.Direction+ray.Origin);
+            a.AddComponent(new Remover(5));
+        }
     }
     protected override void OnRenderFrame(FrameEventArgs args)
     {
@@ -138,14 +147,9 @@ public class Game : GameWindow
         //render camera
         shader.SetMatrix4("view", camera.GetViewMatrix());
         shader.SetVector3("viewPos", camera.Position);
-        Matrix4 projection = Matrix4.CreatePerspectiveFieldOfView
-        (
-            MathHelper.DegreesToRadians(70f),
-            Constants.ScreenSize.X / Constants.ScreenSize.Y,
-            0.1f,100f
-        );
-        shader.SetMatrix4("projection",projection);
+        shader.SetMatrix4("projection",camera.Projection);
 
         SwapBuffers();
+        mainGame.Cleanup();
     }
 }

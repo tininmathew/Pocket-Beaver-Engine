@@ -3,7 +3,7 @@ using OpenTK.Mathematics;
 
 namespace Engine;
 
-public class GameObject
+public class GameObject : IDisposable
 {
     Scene currentScene;
     public GameObject(string name, Mesh? mesh, Scene scene, 
@@ -54,7 +54,10 @@ List<Script>? comps = null)
     }
     public void Destroy()
     {
-        //Components = null;
-        currentScene.List.Remove(this);
+        currentScene.Destroy(this);
+    }
+    public void Dispose()
+    {
+        if(this.Mesh != null) this.Mesh.Dispose();
     }
 }
