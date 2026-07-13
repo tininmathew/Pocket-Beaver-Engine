@@ -63,7 +63,6 @@ public class Scene
 
     public void Cleanup()
     {
-        Console.WriteLine("Cleanup()");
         if (_objectsToRemove.Count == 0) return;
 
         foreach (var obj in _objectsToRemove)

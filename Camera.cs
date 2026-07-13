@@ -17,7 +17,7 @@ public class Camera
     (
         MathHelper.DegreesToRadians(70f),
         Constants.ScreenSize.X / Constants.ScreenSize.Y,
-        0.1f,100f
+        0.1f,1000f
     );
 
     public Matrix4 GetViewMatrix()

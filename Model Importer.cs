@@ -27,6 +27,7 @@ public class ObjParser
 
     private void Loader(string filePath)
     {
+        if(!File.Exists(filePath)) filePath = "models/error.obj";
         CultureInfo culture = CultureInfo.InvariantCulture;
 
         using (StreamReader reader = new StreamReader(filePath))

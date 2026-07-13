@@ -49,13 +49,15 @@ public class Game : GameWindow
         DirLight.Rotation = new Vector3(-0.5f,-1,0);
         DirLight.Intensity = 0.41f;
         DirLight.Color = new Vector3(1,1,1);
-        GameObject map = new GameObject("plane", objParser.LoadMesh("./models/textureField.obj"), mainGame, scale: new Vector3(10));
+        GameObject map = new GameObject("plane", objParser.LoadMesh("./models/textureField.obj"), mainGame, scale: new Vector3(100));
+        
 
-        //GameObject multiObj = new GameObject("multy", objParser.LoadMesh("./models/multi-object.obj"), mainGame, position: new Vector3(0,5,0));
+        GameObject multiObj = new GameObject("multy", objParser.LoadMesh("models/multi-object.obj"), mainGame, position: new Vector3(0,5,0), rotation: new Vector3(0,-90,0));
 
-        GameObject icon = new GameObject("icon", objParser.LoadMesh("./models/quad.obj"), mainGame, position: new Vector3(0,7,0));
-        icon.AddComponent(new Rotater());
-        icon.AddComponent(new OverrideTexture("resources/code.png", 0));
+
+        //GameObject icon = new GameObject("icon", objParser.LoadMesh("./models/quad.obj"), mainGame, position: new Vector3(0,7,0));
+        //icon.AddComponent(new Rotater());
+        //icon.AddComponent(new OverrideTexture("resources/code.png", 0));
         
         camera.Position = new Vector3( 0, 5, 5);
         CursorState = CursorState.Grabbed;
@@ -75,6 +77,7 @@ public class Game : GameWindow
 
         KeysCheck((float)e.Time);
     }
+    float rot = 0;
     void KeysCheck(float e)
     {
         var input = KeyboardState;
@@ -124,10 +127,12 @@ public class Game : GameWindow
         }
         if(input.IsKeyDown(Keys.R))
         {
+            
             Ray ray = Raycaster.GetRayFromScreen(Constants.ScreenSize.X/2, Constants.ScreenSize.Y/2, camera.GetViewMatrix(), camera.Projection, camera.Position);
             ray.Direction *= 5;
             Random random = new Random();
-            GameObject a = new GameObject(random.Next().ToString(), objParser.LoadMesh("models/cube.obj"), mainGame, position: ray.Direction+ray.Origin);
+            GameObject a = new GameObject(random.Next().ToString(), objParser.LoadMesh("models/cube.obj"), mainGame, position: ray.Direction+ray.Origin, rotation: new Vector3(rot,rot,rot), scale: new Vector3(0.1f));
+            rot++;
             a.AddComponent(new Remover(5));
         }
     }

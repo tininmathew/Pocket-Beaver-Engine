@@ -16,7 +16,7 @@ List<Script>? comps = null)
         currentScene = scene;
         currentScene.Add(this);
         Transform.Position = position;
-        Transform.Rotation = rotation;
+        Transform.SetAngles(rotation);
         Transform.Scale = _scale;
         Components = comps??new List<Script>();
         foreach(Script i in Components)
