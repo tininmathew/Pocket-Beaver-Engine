@@ -15,9 +15,8 @@ public class Game : GameWindow
     Shader shader;
     Scene mainGame;
     Camera camera = new Camera();
-    float speed;
-    ObjParser objParser;
-    //InputManager input;
+    public static float speed;
+    InputManager input;
 
     PointLight[] lights;
 
@@ -41,21 +40,20 @@ public class Game : GameWindow
  
         Scene.shader = shader;
         
-        objParser = new ObjParser();
         lights = new PointLight[]
         {
-            new PointLight(new Vector3(3,5,0), new Vector3(1,1,1), 1f, "1l", mainGame, objParser.LoadMesh("./models/quad.obj")),
+            new PointLight(new Vector3(3,5,0), new Vector3(1,1,1), 1f, "1l", mainGame, ObjParser.LoadMesh("./models/quad.obj")),
         };
         DirLight.Rotation = new Vector3(-0.5f,-1,0);
         DirLight.Intensity = 0.41f;
         DirLight.Color = new Vector3(1,1,1);
-        GameObject map = new GameObject("plane", objParser.LoadMesh("./models/textureField.obj"), mainGame, scale: new Vector3(10));
+        GameObject map = new GameObject("plane", ObjParser.LoadMesh("./models/textureField.obj"), mainGame, scale: new Vector3(10));
         
 
-        GameObject multiObj = new GameObject("multy", objParser.LoadMesh("models/multi-object.obj"), mainGame, position: new Vector3(0,5,0), rotation: new Vector3(0,-90,0));
+        GameObject multiObj = new GameObject("multy", ObjParser.LoadMesh("models/multi-object.obj"), mainGame, position: new Vector3(0,5,0), rotation: new Vector3(0,-90,0));
 
 
-        GameObject icon = new GameObject("icon", objParser.LoadMesh("./models/quad.obj"), mainGame, position: new Vector3(0,5,3), rotation: new Vector3(90,0,0));
+        GameObject icon = new GameObject("icon", ObjParser.LoadMesh("./models/quad.obj"), mainGame, position: new Vector3(0,5,3), rotation: new Vector3(90,0,0));
         //icon.AddComponent(new Rotater("y"));
         icon.AddComponent(new OverrideTexture("resources/code.png", 0));
         
@@ -63,14 +61,17 @@ public class Game : GameWindow
         CursorState = CursorState.Grabbed;
         speed = Constants.Speed;
 
-        //input = new InputManager();
+        input = new InputManager(KeyboardState, MouseState, Close, mainGame, camera);
+        KeyDown += input.OnKeyDown;
+        KeyUp += input.OnKeyUp;
     }
 
     protected override void OnUpdateFrame(FrameEventArgs e)
     {
         base.OnUpdateFrame(e);
-
-        InputManager.InputCheck(KeyboardState, MouseState, camera, ref speed, (float)e.Time, Close, mainGame);
+        input.Mouse();
+        input.InputCheck();
+        camera.Position += input.GetMoveDirection() * speed * (float)e.Time;
     }
     protected override void OnRenderFrame(FrameEventArgs args)
     {

@@ -1,26 +1,13 @@
+using OpenTK.Mathematics;
+
 namespace Engine.Scripts;
 
 public class Rotater : Script
 {
-    bool X,Y,Z;
-    public Rotater(string dir)
+    Vector3 direction;
+    public Rotater(Vector3 dir)
     {
-        if(dir.Length > 3) return;
-        for(int i = 0; i < dir.Length; i++)
-        {
-            switch(dir.ToLower()[i])
-            {
-                case 'x':
-                    X=true;
-                    break;
-                case 'y':
-                    Y=true;
-                    break;
-                case 'z':
-                    Z=true;
-                    break;
-            }
-        }
+        direction = dir;
     }
     internal override void Start()
     {
@@ -28,8 +15,6 @@ public class Rotater : Script
     }
     internal override void Update(float deltaTime)
     {
-        gameObject.Transform.Rotation.X += deltaTime * (X?1:0);
-        gameObject.Transform.Rotation.Y += deltaTime * (Y?1:0);
-        gameObject.Transform.Rotation.Z += deltaTime * (Z?1:0);
+        gameObject.Transform.Rotation += deltaTime * direction;
     }
 }

@@ -1,78 +1,146 @@
 using OpenTK.Mathematics;
 using OpenTK.Input;
 using OpenTK.Windowing.GraphicsLibraryFramework;
+using OpenTK.Windowing.Common;
 
 namespace Engine;
 
-public static class InputManager
+public enum TranslateMode
+{
+    Moving, 
+    Rotating,
+    Scaling
+}
+
+public class InputManager
 {
     static bool camLocked;
-    // KeyboardState inpK;
-    // MouseState inpM;
-    // float deltaTime;
-    // Action Close;
-    // Scene scene;
+    KeyboardState inpK;
+    MouseState inpM;
+    Action Close;
+    Scene scene;
+    Camera camera;
+    TranslateMode mode;
 
-    // public InputManager(KeyboardState inK, MouseState inM, float e, Action Close, Scene sc)
-    // {
-    //     inpK = inK;
-    //     inpM = inM;
+    public InputManager(KeyboardState inK, MouseState inM, Action close, Scene sc, Camera cam)
+    {
+        inpK = inK;
+        inpM = inM;
+        Close = close;
+        scene = sc;
+        camera = cam;
+    }
+    public Vector3 GetMoveDirection()
+    {
+        Vector3 Out = new Vector3(0,0,0);
+        if (inpK.IsKeyDown(Keys.W))
+        {
+            Out += camera.Front;
+        }
+        if (inpK.IsKeyDown(Keys.S))
+        {
+            Out -= camera.Front;
+        }
+        if (inpK.IsKeyDown(Keys.D))
+        {
+            Out += camera.Right;
+        }
+        if (inpK.IsKeyDown(Keys.A))
+        {
+            Out -= camera.Right;
+        }
+        if (inpK.IsKeyDown(Keys.E))
+        {
+            Out += camera.Up;
+        }
+        if (inpK.IsKeyDown(Keys.Q))
+        {
+            Out -= camera.Up;
+        }
+        return Out;
+    }
+    public void OnKeyDown(KeyboardKeyEventArgs e)
+    {
+        if (e.Key == Keys.LeftShift)
+        {
+            Game.speed *= 2;
+        }
+        if (e.Key == Keys.LeftControl)
+        {
+            Game.speed /= 2;
+        }
+        if (e.Key == Keys.Delete)
+        {
+            if(scene.Selected != null)
+            {
+                scene.Destroy(scene.Selected);
+            }
+        }
+        if (e.Key == Keys.G)
+        {
+            mode = TranslateMode.Moving;
+        }
+        if (e.Key == Keys.R)
+        {
+            mode = TranslateMode.Rotating;
+        }
+        if (e.Key == Keys.S)
+        {
+            mode = TranslateMode.Scaling;
+        }
+    }
+    void MoveAlong(Vector3 along)
+    {
+        if(scene.Selected == null) return;
 
-    // }
-    public static void InputCheck(KeyboardState inpK, MouseState inpM, Camera camera, ref float speed, float e, Action Close, Scene scene)
+        switch(mode)
+        {
+            case TranslateMode.Moving:
+                scene.Selected.Transform.Position += along * (inpM.Delta.X/100 + inpM.Delta.X/100);
+                break;
+            case TranslateMode.Rotating:
+                scene.Selected.Transform.Rotation += along * (inpM.Delta.X/100 + inpM.Delta.X/100);
+                if(inpM.IsButtonPressed(MouseButton.Right))
+                {
+                    scene.Selected.Transform.Rotation = Vector3.Zero;
+                }
+                break;
+            case TranslateMode.Scaling:
+                scene.Selected.Transform.Scale += along * (inpM.Delta.X/100 + inpM.Delta.X/100);
+                if(inpM.IsButtonPressed(MouseButton.Right))
+                {
+                    scene.Selected.Transform.Scale = Vector3.One;
+                }
+                break;
+        }
+    }
+    public void OnKeyUp(KeyboardKeyEventArgs e)
+    {
+        if(e.Key == Keys.LeftShift)
+        {
+            Game.speed /= 2;
+        }
+        if(e.Key == Keys.LeftControl)
+        {
+            Game.speed *= 2;
+        }
+        if (e.Key == Keys.Escape)
+        {
+            Close();
+        }
+    }
+    public void Mouse()
     {
         if(!camLocked)
         {
             camera.Yaw += inpM.Delta.X * Constants.MouseSensibility;
             camera.Pitch -= inpM.Delta.Y * Constants.MouseSensibility;
-            speed += inpM.ScrollDelta.Y;
+            Game.speed += inpM.ScrollDelta.Y;
             camera.UpdateVectors();
         }
-
-        if (inpK.IsKeyDown(Keys.W))
-        {
-            camera.Position += camera.Front * speed * e;
-        }
-        if (inpK.IsKeyDown(Keys.S))
-        {
-            camera.Position -= camera.Front * speed * e;
-        }
-        if (inpK.IsKeyDown(Keys.D))
-        {
-            camera.Position += camera.Right * speed * e;
-        }
-        if (inpK.IsKeyDown(Keys.A))
-        {
-            camera.Position -= camera.Right * speed * e;
-        }
-        if (inpK.IsKeyDown(Keys.E))
-        {
-            camera.Position += camera.Up * speed * e;
-        }
-        if (inpK.IsKeyDown(Keys.Q))
-        {
-            camera.Position -= camera.Up * speed * e;
-        }
-        if (inpK.IsKeyPressed(Keys.LeftShift))
-        {
-            speed *= 2;
-        }
-        else if(inpK.IsKeyReleased(Keys.LeftShift))
-        {
-            speed /= 2;
-        }
-        if (inpK.IsKeyPressed(Keys.LeftControl))
-        {
-            speed /= 2;
-        }
-        else if(inpK.IsKeyReleased(Keys.LeftControl))
-        {
-            speed *= 2;
-        }
-        if (inpK.IsKeyPressed(Keys.Escape))
-        {
-            Close();
-        }
+    }
+    public void InputCheck()
+    {
         if(inpM.IsButtonPressed(MouseButton.Left))
         {
             if(inpK.IsKeyDown(Keys.LeftControl))
@@ -94,37 +162,25 @@ public static class InputManager
         if(inpM.IsButtonDown(MouseButton.Left))
         {
             if(scene.Selected == null) return;
-            camLocked = inpK.IsKeyDown(Keys.R);
-            if(!inpK.IsKeyDown(Keys.R))
-            {
-                Ray ray = Raycaster.GetRayFromScreen(Constants.ScreenSize.X/2, Constants.ScreenSize.Y/2, camera.GetViewMatrix(), camera.Projection, camera.Position);
-                Vector3 hand = 5 * ray.Direction + ray.Origin;
-                scene.Selected.Transform.Position = hand;
-                Console.WriteLine(scene.Selected.Transform.Position);
-            }
-            else
-            {
-                if(inpK.IsKeyDown(Keys.X))
-                {
-                    scene.Selected.Transform.Rotation.Y += inpM.Delta.X/100 + inpM.Delta.Y/100;
-                }
-                else if(inpK.IsKeyDown(Keys.Y))
-                {
-                    scene.Selected.Transform.Rotation.Z += inpM.Delta.X/100 + inpM.Delta.Y/100;
-                }
-                else
-                {
-                    scene.Selected.Transform.Rotation.Y += inpM.Delta.X/100;
-                    scene.Selected.Transform.Rotation.Z += inpM.Delta.Y/100;
-                }
-            }
         }
-        if (inpK.IsKeyPressed(Keys.Delete))
+        if (inpK.IsKeyDown(Keys.X))
         {
-            if(scene.Selected != null)
-            {
-                scene.Destroy(scene.Selected);
-            }
+            MoveAlong(Vector3.UnitX);
+            camLocked = true;
+        }
+        if (inpK.IsKeyDown(Keys.Y))
+        {
+            MoveAlong(Vector3.UnitY);
+            camLocked = true;
+        }
+        if (inpK.IsKeyDown(Keys.Z))
+        {
+            MoveAlong(Vector3.UnitZ);
+            camLocked = true;
+        }
+        if (inpK.IsKeyReleased(Keys.X)|inpK.IsKeyReleased(Keys.Y)|inpK.IsKeyReleased(Keys.Z))
+        {
+            camLocked = false;
         }
     }
 }

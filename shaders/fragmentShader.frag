@@ -35,11 +35,11 @@ void main() {
     for (int i = 0; i < P_LIGHT_COUNT; i++) {
         vec3 lightDir = normalize(lights[i].transform - FragPos);
         float diffFactor = max(dot(norm, lightDir), 0.0);
-        totalDiffuse += lights[i].color * diffFactor * lights[i].intensity;
+        totalDiffuse += (lights[i].color * diffFactor * lights[i].intensity) / distance(FragPos, lights[i].transform);
 
         vec3 halfwayDir = normalize(lightDir + viewDir);
         float specFactor = pow(max(dot(norm, halfwayDir), 0.0), 32.0);
-        totalSpecular += lights[i].color * specFactor * lights[i].intensity;
+        totalSpecular += (lights[i].color * specFactor * lights[i].intensity) / distance(FragPos, lights[i].transform);
     }
 
     vec3 dirLightDir = normalize(-dirLight.transform);

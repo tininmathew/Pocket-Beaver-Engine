@@ -6,26 +6,26 @@ using OpenTK.Mathematics;
 
 namespace Engine;
 
-public class ObjParser
+public static class ObjParser
 {
-    private List<uint> VertexIndices = new();
-    private List<Vertex> Vertices = new();
-    private List<Vector3> normals = new();
-    private List<Vector3> positions = new();
-    public List<Vector2> UVs = new();
+    private static List<uint> VertexIndices = new();
+    private static List<Vertex> Vertices = new();
+    private static List<Vector3> normals = new();
+    private static List<Vector3> positions = new();
+    public static List<Vector2> UVs = new();
 
-    private List<Submesh> Submeshes = new();
+    private static List<Submesh> Submeshes = new();
     
     // Храним маппинг ИмяМатериала -> ID для синхронизации
-    private Dictionary<string, int> MaterialNameToId = new();
-    private int _nextMaterialId = 0;
+    static private Dictionary<string, int> MaterialNameToId = new();
+    static private int _nextMaterialId = 0;
 
-    private int _currentMaterialId = -1; // Изначально -1 (нет материала)
-    private int _currentSubmeshStartIndex = 0;
-    private int _currentSubmeshIndexCount = 0;
-    private string pathToMtl = "";
+    static private int _currentMaterialId = -1; // Изначально -1 (нет материала)
+    static private int _currentSubmeshStartIndex = 0;
+    static private int _currentSubmeshIndexCount = 0;
+    static private string pathToMtl = "";
 
-    private void Loader(string filePath)
+    private static void Loader(string filePath)
     {
         if(!File.Exists(filePath)) filePath = "models/error.obj";
         CultureInfo culture = CultureInfo.InvariantCulture;
@@ -158,7 +158,7 @@ public class ObjParser
         }
     }
 
-    private void EndCurrentSubmesh()
+    private static void EndCurrentSubmesh()
     {
         if (_currentSubmeshIndexCount > 0)
         {
@@ -266,7 +266,7 @@ public class ObjParser
         );
     }
 
-    public Mesh LoadMesh(string path)
+    public static Mesh LoadMesh(string path)
     {
         // Полный сброс состояния для повторного использования парсера
         VertexIndices.Clear();
