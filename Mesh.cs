@@ -1,4 +1,5 @@
 using OpenTK.Graphics.OpenGL4;
+using OpenTK.Mathematics;
 using System.Runtime.InteropServices;
 
 namespace Engine;
@@ -10,15 +11,37 @@ public class Mesh : IDisposable
     private readonly int _ebo;
     
     // Список всех подмешей
-    public readonly Submesh[] submeshes;
-    public readonly Material[] materials;
+    public Submesh[] submeshes;
+    public Material[] materials;
+    public readonly bool IsTransparent = false;
     private bool _disposed = false;
+    private List<Submesh> opaqueSubmeshes = new();
+    private List<Submesh> transparentSubmeshes = new();
 
 
     public Mesh(Vertex[] vertices, uint[] indices, Submesh[] _submeshes, Material[] _materials)
     {
         submeshes = _submeshes;
         materials = _materials;
+        foreach(Material i in materials)
+        {
+            if(i.Transparency < 1)
+            {
+                IsTransparent = true;
+                break;
+            }
+        }
+        for(int i = 0; i < submeshes.Length; i++)
+        {
+            if(materials[submeshes[i].MaterialId].Transparency < 1)
+            {
+                transparentSubmeshes.Add(submeshes[i]);
+            }
+            else
+            {
+                opaqueSubmeshes.Add(submeshes[i]);
+            }
+        }
 
         _vao = GL.GenVertexArray();
         _vbo = GL.GenBuffer();
@@ -49,31 +72,43 @@ public class Mesh : IDisposable
     public void Draw(/*MaterialManager materialManager*/)
     {
         GL.BindVertexArray(_vao);
-
-        foreach (var submesh in submeshes)
+        bool opaqueRendered = false;
+        for(int i = 0; i < 2; i ++)
         {
-            nint pointerOffset = (nint)(submesh.StartIndex * sizeof(uint));
-            Scene.shader.SetVector3("diffuse", materials[submesh.MaterialId].Diffuse);
-            Scene.shader.SetVector3("ambient", materials[submesh.MaterialId].Ambient);
-            Scene.shader.SetVector3("specular", materials[submesh.MaterialId].Specular);
-            Scene.shader.SetFloat("alpha", materials[submesh.MaterialId].Transparency);
-            if(materials[submesh.MaterialId].Texture != -1)
+            foreach(var submesh in opaqueRendered?transparentSubmeshes:opaqueSubmeshes)
             {
-                int handle = materials[submesh.MaterialId].Texture;
-                GL.ActiveTexture(TextureUnit.Texture0);
-                GL.BindTexture(TextureTarget.Texture2D, handle);
+                nint pointerOffset = (nint)(submesh.StartIndex * sizeof(uint));
+                Scene.shader.SetVector3("diffuse", materials[submesh.MaterialId].Diffuse);
+                Scene.shader.SetVector3("ambient", materials[submesh.MaterialId].Ambient);
+                Scene.shader.SetVector3("specular", materials[submesh.MaterialId].Specular);
+                Scene.shader.SetFloat("alpha", materials[submesh.MaterialId].Transparency);
+                if(materials[submesh.MaterialId].Texture != -1)
+                {
+                    int handle = materials[submesh.MaterialId].Texture;
+                    GL.ActiveTexture(TextureUnit.Texture0);
+                    GL.BindTexture(TextureTarget.Texture2D, handle);
+                }
+                if(opaqueRendered)
+                {
+                    GL.Enable(EnableCap.Blend);
+                    GL.DepthMask(false);
+                }
+                    
+                
+                // 3. Рисуем только часть индексов
+                GL.DrawElements(
+                    PrimitiveType.Triangles,
+                    submesh.IndexCount,          // Сколько индексов нарисовать
+                    DrawElementsType.UnsignedInt,
+                    pointerOffset                // Откуда начать в EBO (в байтах!)
+                );
+                GL.DepthMask(true);
+                GL.Disable(EnableCap.Blend);
             }
-            
-            // 3. Рисуем только часть индексов
-            GL.DrawElements(
-                PrimitiveType.Triangles,
-                submesh.IndexCount,          // Сколько индексов нарисовать
-                DrawElementsType.UnsignedInt,
-                pointerOffset                // Откуда начать в EBO (в байтах!)
-            );
+            opaqueRendered = true;
         }
-
         GL.BindVertexArray(0);
+        
     }
 
 

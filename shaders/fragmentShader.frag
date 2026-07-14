@@ -53,5 +53,8 @@ void main() {
     vec3 finalDiffuse = totalDiffuse * diffuse;
     vec3 finalSpecular = totalSpecular * specular;
     vec3 result = totalAmbient + finalDiffuse + finalSpecular;
-    FragColor = vec4(result , alpha) * texture(texture0, texCoord); 
+    vec4 texcol = texture(texture0, texCoord);
+    if(texcol.a < 0.1)
+        discard; 
+    FragColor = vec4(result , alpha) * texcol;
 }

@@ -6,7 +6,7 @@ public class Rotater : Script
     public Rotater(string dir)
     {
         if(dir.Length > 3) return;
-        for(int i = 0; i < 2; i++)
+        for(int i = 0; i < dir.Length; i++)
         {
             switch(dir.ToLower()[i])
             {

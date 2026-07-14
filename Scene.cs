@@ -1,3 +1,5 @@
+using OpenTK.Mathematics;
+
 namespace Engine;
 
 public class Scene
@@ -5,6 +7,7 @@ public class Scene
     public List<GameObject> List {get;set;} = new List<GameObject>();
     public static Shader shader;
     private List<GameObject> _objectsToRemove = new List<GameObject>();
+    public GameObject? Selected { get; private set; }
 
     public void Add(GameObject toAdd)
     {
@@ -27,9 +30,11 @@ public class Scene
             }
             else
             {
-                toAdd.Name = startName + i;
+                toAdd.Name = startName + i.ToString();
             }
         }
+        var sortedList = List.OrderBy(x => x.Mesh?.IsTransparent).ToList();
+        this.List = sortedList;
     }
     public GameObject Find(string name)
     {
@@ -50,6 +55,31 @@ public class Scene
         {
             Console.WriteLine("Error: Object not found!");
             return List[0];
+        }
+    }
+    List<Material> originalMaterials = new();
+    Material selectedMat = new Material("selected", dif: new Vector3(1,0,0));
+    public void Deselect()
+    {
+        if(Selected==null) return;
+        if(Selected.Mesh != null)
+        {
+            Selected.Mesh.materials = originalMaterials.ToArray();
+        }
+        Selected = null;
+    }
+    public void Select(GameObject to)
+    {
+        if(Selected != null) Deselect();
+        Selected = to;
+        originalMaterials = new();
+        if(Selected == null) return;
+        if(Selected.Mesh == null) return;
+
+        for(int i = 0; i < Selected.Mesh.materials.Length; i++)
+        {
+            originalMaterials.Add(Selected.Mesh.materials[i]);
+            Selected.Mesh.materials[i] = selectedMat;
         }
     }
 

@@ -40,4 +40,25 @@ public static class Raycaster
             Direction = rayWorldDir  // Вектор направления
         };
     }
+    public static bool RayIntersectsSphere(Ray ray, Vector3 sphereCenter, float sphereRadius, out float distance)
+    {
+        distance = 0f;
+        Vector3 oc = ray.Origin - sphereCenter;
+        
+        float b = Vector3.Dot(oc, ray.Direction);
+        float c = Vector3.Dot(oc, oc) - sphereRadius * sphereRadius;
+        
+        if (b > 0.0f && c > 0.0f) return false;
+        
+        float discriminant = b * b - c;
+        
+        if (discriminant < 0.0f) return false;
+        
+        distance = -b - (float)Math.Sqrt(discriminant);
+        
+        if (distance < 0.0f) distance = 0.0f;
+        
+        return true;
+    }
+
 }
