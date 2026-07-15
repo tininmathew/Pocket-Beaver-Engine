@@ -1,3 +1,4 @@
+using OpenTK.Graphics.ES11;
 using OpenTK.Mathematics;
 
 namespace Engine;
@@ -5,34 +6,46 @@ namespace Engine;
 public class Transform
 {
     public Vector3 Position;
+    public Vector3 WorldPosition;
     /// <summary>
     /// Radians rotation. For angles do the "SetAngles();"
     /// </summary>
-    public Vector3 Rotation;
+    public Quaternion Rotation;
     public Vector3 Scale = Vector3.One;
-    public void SetAngles(Vector3 angles)
+    public Transform? Parent;
+    public Vector3 Angles
     {
-        Rotation = angles * (float)(Math.PI/180d);
-    }
-    public Vector3 GetAngles()
-    {
-        return Rotation * (float)(180d/Math.PI);
+        get
+        {
+            return Rotation.ToEulerAngles() * (float)(180d / Math.PI); 
+        }
+        set
+        {
+            float radiansX = MathHelper.DegreesToRadians(value.X);
+            float radiansY = MathHelper.DegreesToRadians(value.Y);
+            float radiansZ = MathHelper.DegreesToRadians(value.Z);
+            Rotation = Quaternion.FromAxisAngle(Vector3.UnitY, radiansY) *
+                    Quaternion.FromAxisAngle(Vector3.UnitX, radiansX) *
+                    Quaternion.FromAxisAngle(Vector3.UnitZ, radiansZ);
+        }
     }
 
     public Matrix4 ModelMatrix
     {
         get
         {
-            return
+            Matrix4 matrix =
                 Matrix4.CreateScale(Scale)
                 *
-                Matrix4.CreateRotationX(Rotation.X)
-                *
-                Matrix4.CreateRotationY(Rotation.Y)
-                *
-                Matrix4.CreateRotationZ(Rotation.Z)
+                Matrix4.CreateFromQuaternion(Rotation)
                 *
                 Matrix4.CreateTranslation(Position);
+            if(Parent != null)
+            {
+                matrix *= Parent.ModelMatrix;
+            }
+            WorldPosition = matrix.Row3.Xyz;
+            return matrix;
         }
     }
 }

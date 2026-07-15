@@ -13,7 +13,7 @@ public class PointLight : GameObject
         Color = color;
         Intensity = inten;
         AddComponent(new OverrideTexture("resources/lamp.png", 0));
-        AddComponent(new Rotater(new Vector3(0, 10, 0)));
+        AddComponent(new Rotater(Vector3.UnitY, 10));
     }
 }
 public class DirLight

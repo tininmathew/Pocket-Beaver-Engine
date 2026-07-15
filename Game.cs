@@ -53,7 +53,7 @@ public class Game : GameWindow
         GameObject multiObj = new GameObject("multy", ObjParser.LoadMesh("models/multi-object.obj"), mainGame, position: new Vector3(0,5,0), rotation: new Vector3(0,-90,0));
 
 
-        GameObject icon = new GameObject("icon", ObjParser.LoadMesh("./models/quad.obj"), mainGame, position: new Vector3(0,5,3), rotation: new Vector3(90,0,0));
+        GameObject icon = new GameObject("icon", ObjParser.LoadMesh("./models/quad.obj"), mainGame, position: new Vector3(0,5,3), rotation: new Vector3(90,0,0), parent: multiObj.Transform);
         //icon.AddComponent(new Rotater("y"));
         icon.AddComponent(new OverrideTexture("resources/code.png", 0));
         
@@ -93,5 +93,10 @@ public class Game : GameWindow
 
         SwapBuffers();
         mainGame.Cleanup();
+    }
+    protected override void OnResize(ResizeEventArgs e)
+    {
+        base.OnResize(e);
+        GL.Viewport(0, 0, e.Width, e.Height);
     }
 }

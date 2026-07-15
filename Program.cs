@@ -2,6 +2,8 @@
 using OpenTK.Windowing.Desktop;
 using OpenTK.Mathematics;
 using System.Runtime.InteropServices;
+using OpenTK.Windowing.Common.Input;
+using StbImageSharp;
 
 namespace Engine;
 
@@ -10,12 +12,11 @@ internal class Program
     static void Main()
     {
         var gameSettings = GameWindowSettings.Default;
-
         var nativeSettings = new NativeWindowSettings()
         {
             Title = Constants.WindowName,
             ClientSize = new OpenTK.Mathematics.Vector2i((int)Constants.ScreenSize.X, (int)Constants.ScreenSize.Y),
-            WindowState = WindowState.Maximized
+            WindowState = WindowState.Maximized, 
         };
 
         using var window = new Game(gameSettings, nativeSettings);

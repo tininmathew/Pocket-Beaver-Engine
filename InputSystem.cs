@@ -1,5 +1,6 @@
 using OpenTK.Mathematics;
 using OpenTK.Input;
+using OpenTK.Graphics.OpenGL4;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using OpenTK.Windowing.Common;
 
@@ -11,6 +12,11 @@ public enum TranslateMode
     Rotating,
     Scaling
 }
+public enum TransformOrientation
+{
+    Local, 
+    Global
+}
 
 public class InputManager
 {
@@ -21,6 +27,7 @@ public class InputManager
     Scene scene;
     Camera camera;
     TranslateMode mode;
+    TransformOrientation orientation;
 
     public InputManager(KeyboardState inK, MouseState inM, Action close, Scene sc, Camera cam)
     {
@@ -76,6 +83,17 @@ public class InputManager
                 scene.Destroy(scene.Selected);
             }
         }
+        if (e.Key == Keys.P)
+        {
+            if(GL.IsEnabled(EnableCap.CullFace))
+            {
+                GL.Disable(EnableCap.CullFace); 
+            }
+            else
+            {
+                GL.Enable(EnableCap.CullFace); 
+            }
+        }
         if (e.Key == Keys.G)
         {
             mode = TranslateMode.Moving;
@@ -88,6 +106,18 @@ public class InputManager
         {
             mode = TranslateMode.Scaling;
         }
+        if (e.Key == Keys.Tab)
+        {
+            if((int)orientation < Enum.GetValues(typeof(TransformOrientation)).Length-1)
+            {
+                orientation++;
+            }
+            else
+            {
+                orientation = 0;
+            }
+            Console.WriteLine(orientation);
+        }
     }
     void MoveAlong(Vector3 along)
     {
@@ -96,17 +126,33 @@ public class InputManager
         switch(mode)
         {
             case TranslateMode.Moving:
-                scene.Selected.Transform.Position += along * (inpM.Delta.X/100 + inpM.Delta.X/100);
+                if(orientation == TransformOrientation.Local)
+                {
+                    scene.Selected.Transform.Position += scene.Selected.Transform.Rotation * (-along * (inpM.Delta.X/100 + inpM.Delta.Y/100));
+                }
+                else
+                {
+                    scene.Selected.Transform.Position += along * (inpM.Delta.X/100 + inpM.Delta.Y/100);
+                }
+                
                 break;
             case TranslateMode.Rotating:
-                scene.Selected.Transform.Rotation += along * (inpM.Delta.X/100 + inpM.Delta.X/100);
+                if(orientation == TransformOrientation.Local)
+                {
+                    scene.Selected.Transform.Rotation *= Quaternion.FromAxisAngle(along, inpM.Delta.X/100 + inpM.Delta.Y/100);
+                }
+                else
+                {
+                    scene.Selected.Transform.Rotation = Quaternion.FromAxisAngle(along, inpM.Delta.X/100 + inpM.Delta.Y/100) * scene.Selected.Transform.Rotation;
+                }
+                
                 if(inpM.IsButtonPressed(MouseButton.Right))
                 {
-                    scene.Selected.Transform.Rotation = Vector3.Zero;
+                    scene.Selected.Transform.Angles = Vector3.Zero;
                 }
                 break;
             case TranslateMode.Scaling:
-                scene.Selected.Transform.Scale += along * (inpM.Delta.X/100 + inpM.Delta.X/100);
+                scene.Selected.Transform.Scale += along * (inpM.Delta.X/100 + inpM.Delta.Y/100);
                 if(inpM.IsButtonPressed(MouseButton.Right))
                 {
                     scene.Selected.Transform.Scale = Vector3.One;
@@ -133,8 +179,10 @@ public class InputManager
     {
         if(!camLocked)
         {
-            camera.Yaw += inpM.Delta.X * Constants.MouseSensibility;
-            camera.Pitch -= inpM.Delta.Y * Constants.MouseSensibility;
+            Quaternion pitchRotation = Quaternion.FromAxisAngle(Vector3.UnitX, -inpM.Delta.Y * Constants.MouseSensibility);
+            Quaternion yawRotation = Quaternion.FromAxisAngle(Vector3.UnitY, -inpM.Delta.X * Constants.MouseSensibility);
+            camera.Rotation = yawRotation * camera.Rotation * pitchRotation;
+            camera.Rotation = Quaternion.Normalize(camera.Rotation);
             Game.speed += inpM.ScrollDelta.Y;
             camera.UpdateVectors();
         }
@@ -152,7 +200,7 @@ public class InputManager
                 Ray ray = Raycaster.GetRayFromScreen(Constants.ScreenSize.X/2, Constants.ScreenSize.Y/2, camera.GetViewMatrix(), camera.Projection, camera.Position);
                 foreach(GameObject i in scene.List)
                 {
-                    if(Raycaster.RayIntersectsSphere(ray, i.Transform.Position, 1, out float distance))
+                    if(Raycaster.RayIntersectsSphere(ray, i.Transform.WorldPosition, 1, out float distance))
                     {
                         scene.Select(i);
                     }

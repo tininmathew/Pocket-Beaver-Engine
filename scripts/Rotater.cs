@@ -5,9 +5,11 @@ namespace Engine.Scripts;
 public class Rotater : Script
 {
     Vector3 direction;
-    public Rotater(Vector3 dir)
+    float speed;
+    public Rotater(Vector3 dir, float _speed)
     {
-        direction = dir;
+        direction = Vector3.Normalize(dir);
+        speed = _speed;
     }
     internal override void Start()
     {
@@ -15,6 +17,6 @@ public class Rotater : Script
     }
     internal override void Update(float deltaTime)
     {
-        gameObject.Transform.Rotation += deltaTime * direction;
+        gameObject.Transform.Rotation *= Quaternion.FromAxisAngle(direction, deltaTime * speed);
     }
 }

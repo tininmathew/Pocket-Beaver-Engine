@@ -8,7 +8,7 @@ public class GameObject : IDisposable
     Scene currentScene;
     public GameObject(string name, Mesh? mesh, Scene scene, 
 Vector3 position = default, Vector3 rotation = default, Vector3? scale = null,
-List<Script>? comps = null)
+List<Script>? comps = null, Transform? parent = null)
     {
         Vector3 _scale = scale ?? Vector3.One;
         this.Name = name;
@@ -16,8 +16,9 @@ List<Script>? comps = null)
         currentScene = scene;
         currentScene.Add(this);
         Transform.Position = position;
-        Transform.SetAngles(rotation);
+        Transform.Angles = rotation;
         Transform.Scale = _scale;
+        Transform.Parent = parent;
         Components = comps??new List<Script>();
         foreach(Script i in Components)
         {
