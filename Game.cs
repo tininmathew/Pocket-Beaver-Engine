@@ -53,9 +53,7 @@ public class Game : GameWindow
         GameObject multiObj = new GameObject("multy", ObjParser.LoadMesh("models/multi-object.obj"), mainGame, position: new Vector3(0,5,0), rotation: new Vector3(0,-90,0));
 
 
-        GameObject icon = new GameObject("icon", ObjParser.LoadMesh("./models/quad.obj"), mainGame, position: new Vector3(0,5,3), rotation: new Vector3(90,0,0), parent: multiObj.Transform);
-        //icon.AddComponent(new Rotater("y"));
-        icon.AddComponent(new OverrideTexture("resources/code.png", 0));
+        GameObject icon = new GameObject("icon", ObjParser.LoadMesh("./resources/code.png", MeshType.Bilboard), mainGame, position: new Vector3(0,5,3), rotation: new Vector3(90,0,0), parent: multiObj.Transform);
         
         camera.Position = new Vector3( 0, 5, 5);
         CursorState = CursorState.Grabbed;
@@ -77,19 +75,19 @@ public class Game : GameWindow
     {
         base.OnRenderFrame(args);
         GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
-        shader.Use();
 
         //render objects
         shader.SetLights(lights);
         foreach(GameObject i in mainGame.List)
         {
             i.Render(shader);
+            shader.SetMatrix4("view", camera.GetViewMatrix(),"");
+            shader.SetVector3("viewPos", camera.Position);
+            shader.SetMatrix4("projection",camera.Projection,"");
             i.Update((float)args.Time);
         }
         //render camera
-        shader.SetMatrix4("view", camera.GetViewMatrix());
-        shader.SetVector3("viewPos", camera.Position);
-        shader.SetMatrix4("projection",camera.Projection);
+        
 
         SwapBuffers();
         mainGame.Cleanup();
