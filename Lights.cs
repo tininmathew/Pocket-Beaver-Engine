@@ -12,7 +12,7 @@ public class PointLight : GameObject
     {
         Color = color;
         Intensity = inten;
-        AddComponent(new OverrideTexture("resources/lamp.png", 0));
+        AddComponent(new OverrideTexture("resources/light.png", 0));
         AddComponent(new Rotater(Vector3.UnitY, 10));
     }
 }
