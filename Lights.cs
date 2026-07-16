@@ -8,11 +8,11 @@ public class PointLight : GameObject
 {
     public Vector3 Color;
     public float Intensity;
-    public PointLight(Vector3 pos, Vector3 color, float inten, string name, Scene scene, Mesh? mesh) : base(name, ObjParser.LoadMesh("models/quad.obj"), scene, position: pos)
+    public PointLight(Vector3 pos, Vector3 color, float inten, string name, Scene scene, Mesh? mesh) 
+    : base(name, ObjParser.LoadMesh("resources/light.png", MeshType.Sprite), scene, position: pos)
     {
         Color = color;
         Intensity = inten;
-        AddComponent(new OverrideTexture("resources/light.png", 0));
         AddComponent(new Rotater(Vector3.UnitY, 10));
     }
 }

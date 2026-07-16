@@ -47,7 +47,6 @@ public static class ObjParser
                 switch (type)
                 {
                     case "mtllib":
-                        // Корректное объединение путей для любых ОС
                         pathToMtl = Path.Combine(Path.GetDirectoryName(filePath) ?? "", parts[1]);
                         break;
 
@@ -76,10 +75,8 @@ public static class ObjParser
                     case "usemtl":
                         string matName = parts[1];
 
-                        // Сохраняем предыдущий субмеш, если в нем были полигоны
                         EndCurrentSubmesh();
 
-                        // Регистрируем материал, если встретили впервые
                         if (!MaterialNameToId.TryGetValue(matName, out int matId))
                         {
                             matId = _nextMaterialId++;
@@ -173,13 +170,13 @@ public static class ObjParser
     }
 
     // Изменено: Передаем Dictionary для синхронизации ID по имени
-    private static Material[] LoadMTL(string filePath, Dictionary<string, int> materialNameToId)
+    private static Material[] LoadMTL(string filePath)
     {
         if (!File.Exists(filePath))
         {
             // Если MTL нет, создаем массив заглушек на основе найденных в OBJ имен
-            Material[] fallbacks = new Material[materialNameToId.Count];
-            foreach (var kvp in materialNameToId)
+            Material[] fallbacks = new Material[MaterialNameToId.Count];
+            foreach (var kvp in MaterialNameToId)
             {
                 fallbacks[kvp.Value] = new Material(kvp.Key);
             }
@@ -187,7 +184,7 @@ public static class ObjParser
         }
 
         // Выделяем массив под точное количество материалов, найденных в OBJ
-        Material[] materials = new Material[materialNameToId.Count];
+        Material[] materials = new Material[MaterialNameToId.Count];
         Material currentMaterial = null;
         int currentId = -1;
 
@@ -205,7 +202,7 @@ public static class ObjParser
                 case "newmtl":
                     string matName = parts[1];
                     // Проверяем, используется ли этот материал в OBJ
-                    if (materialNameToId.TryGetValue(matName, out currentId))
+                    if (MaterialNameToId.TryGetValue(matName, out currentId))
                     {
                         currentMaterial = new Material(matName);
                         materials[currentId] = currentMaterial;
@@ -245,7 +242,7 @@ public static class ObjParser
         }
 
         // Заполняем пропуски дефолтными материалами (если в MTL не было описания)
-        foreach (var kvp in materialNameToId)
+        foreach (var kvp in MaterialNameToId)
         {
             if (materials[kvp.Value] == null)
             {
@@ -265,10 +262,8 @@ public static class ObjParser
             float.Parse(parts[3], CultureInfo.InvariantCulture)
         );
     }
-
-    public static Mesh LoadMesh(string path)
+    static void ClearAll()
     {
-        // Полный сброс состояния для повторного использования парсера
         VertexIndices.Clear();
         Vertices.Clear();
         normals.Clear();
@@ -282,17 +277,32 @@ public static class ObjParser
         _currentSubmeshStartIndex = 0;
         _currentSubmeshIndexCount = 0;
         pathToMtl = "";
+    }
 
-        Loader(path);
+    public static Mesh LoadMesh(string path, MeshType type = MeshType.Solid)
+    {
+        ClearAll();
+        Material[] materials;
+        if(type == MeshType.Solid)
+        {
+            Loader(path); 
+            materials = LoadMTL(pathToMtl); 
+        }
+        else
+        {
+            Loader("models/quad.obj");
+            materials = LoadMTL(pathToMtl);
+            materials[0].Texture = TextureLoader.LoadTexture(path);
+        }
+
         
-        // Передаем карту имен в LoadMTL для строгого соответствия индексов
-        Material[] materials = LoadMTL(pathToMtl, MaterialNameToId); 
 
         return new Mesh(
             Vertices.ToArray(), 
             VertexIndices.ToArray(), 
             Submeshes.ToArray(), 
-            materials
+            materials,
+            type
         );
     }
 }

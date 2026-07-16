@@ -4,13 +4,19 @@ using System.Runtime.InteropServices;
 
 namespace Engine;
 
+public enum MeshType
+{
+    Solid,
+    Sprite
+}
+
 public class Mesh : IDisposable
 {
     private readonly int _vao;
     private readonly int _vbo;
     private readonly int _ebo;
     
-    // Список всех подмешей
+    public MeshType type { get; private set; }
     public Submesh[] submeshes;
     public Material[] materials;
     public readonly bool IsTransparent = false;
@@ -19,8 +25,9 @@ public class Mesh : IDisposable
     private List<Submesh> transparentSubmeshes = new();
 
 
-    public Mesh(Vertex[] vertices, uint[] indices, Submesh[] _submeshes, Material[] _materials)
+    public Mesh(Vertex[] vertices, uint[] indices, Submesh[] _submeshes, Material[] _materials, MeshType type_)
     {
+        type = type_;
         submeshes = _submeshes;
         materials = _materials;
         foreach(Material i in materials)
@@ -69,44 +76,82 @@ public class Mesh : IDisposable
 
         GL.BindVertexArray(0);
     }
-    public void Draw(/*MaterialManager materialManager*/)
+    public void Draw(Matrix4 model, string debug)
     {
+        Scene.shader.Use(type);
+        Scene.shader.SetMatrix4("model", model, debug);
         GL.BindVertexArray(_vao);
-        bool opaqueRendered = false;
-        for(int i = 0; i < 2; i ++)
+        if(type == MeshType.Solid)
         {
-            foreach(var submesh in opaqueRendered?transparentSubmeshes:opaqueSubmeshes)
+            bool opaqueRendered = false;
+            for(int i = 0; i < 2; i ++)
             {
-                nint pointerOffset = (nint)(submesh.StartIndex * sizeof(uint));
-                Scene.shader.SetVector3("diffuse", materials[submesh.MaterialId].Diffuse);
-                Scene.shader.SetVector3("ambient", materials[submesh.MaterialId].Ambient);
-                Scene.shader.SetVector3("specular", materials[submesh.MaterialId].Specular);
-                Scene.shader.SetFloat("alpha", materials[submesh.MaterialId].Transparency);
-                if(materials[submesh.MaterialId].Texture != -1)
+                foreach(var submesh in opaqueRendered?transparentSubmeshes:opaqueSubmeshes)
                 {
-                    int handle = materials[submesh.MaterialId].Texture;
-                    GL.ActiveTexture(TextureUnit.Texture0);
-                    GL.BindTexture(TextureTarget.Texture2D, handle);
-                }
-                if(opaqueRendered)
-                {
-                    GL.Enable(EnableCap.Blend);
-                    GL.DepthMask(false);
-                }
+                    nint pointerOffset = (nint)(submesh.StartIndex * sizeof(uint));
+                    Scene.shader.SetVector3("diffuse", materials[submesh.MaterialId].Diffuse);
+                    Scene.shader.SetVector3("ambient", materials[submesh.MaterialId].Ambient);
+                    Scene.shader.SetVector3("specular", materials[submesh.MaterialId].Specular);
+                    Scene.shader.SetFloat("alpha", materials[submesh.MaterialId].Transparency);
+                    if(materials[submesh.MaterialId].Texture != -1)
+                    {
+                        int handle = materials[submesh.MaterialId].Texture;
+                        GL.ActiveTexture(TextureUnit.Texture0);
+                        GL.BindTexture(TextureTarget.Texture2D, handle);
+                    }
+                    if(opaqueRendered)
+                    {
+                        GL.Enable(EnableCap.Blend);
+                        GL.DepthMask(false);
+                    }
+                        
                     
-                
-                // 3. Рисуем только часть индексов
-                GL.DrawElements(
-                    PrimitiveType.Triangles,
-                    submesh.IndexCount,          // Сколько индексов нарисовать
-                    DrawElementsType.UnsignedInt,
-                    pointerOffset                // Откуда начать в EBO (в байтах!)
-                );
-                GL.DepthMask(true);
-                GL.Disable(EnableCap.Blend);
+                    // 3. Рисуем только часть индексов
+                    GL.DrawElements(
+                        PrimitiveType.Triangles,
+                        submesh.IndexCount,          // Сколько индексов нарисовать
+                        DrawElementsType.UnsignedInt,
+                        pointerOffset                // Откуда начать в EBO (в байтах!)
+                    );
+                    GL.DepthMask(true);
+                    GL.Disable(EnableCap.Blend);
+                }
+                opaqueRendered = true;
             }
-            opaqueRendered = true;
         }
+        else
+        {
+            Submesh submesh = submeshes[0];
+            nint pointerOffset = (nint)(submesh.StartIndex * sizeof(uint));
+            
+            Scene.shader.SetVector3("diffuse", materials[submesh.MaterialId].Diffuse);
+            Scene.shader.SetVector3("ambient", materials[submesh.MaterialId].Ambient);
+            Scene.shader.SetVector3("specular", materials[submesh.MaterialId].Specular);
+            Scene.shader.SetFloat("alpha", materials[submesh.MaterialId].Transparency);
+            
+            int handle = materials[submesh.MaterialId].Texture;
+            GL.ActiveTexture(TextureUnit.Texture0);
+            GL.BindTexture(TextureTarget.Texture2D, handle);
+            
+            // Отключаем отсечение, так как билборд должен быть виден с обеих сторон
+            GL.Disable(EnableCap.CullFace); 
+            
+            // ИСПРАВЛЕНО: Раскомментируйте блендинг, так как спрайты обычно имеют прозрачные области
+            //GL.Enable(EnableCap.Blend);
+            //GL.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
+            
+            GL.DrawElements(
+                PrimitiveType.Triangles,
+                submesh.IndexCount,
+                DrawElementsType.UnsignedInt,
+                pointerOffset
+            );
+            
+            // ИСПРАВЛЕНО: Возвращаем состояние контекста OpenGL в исходное
+            GL.Disable(EnableCap.Blend);
+            GL.Enable(EnableCap.CullFace); // Включаем обратно для Solid объектов!
+        }
+        
         GL.BindVertexArray(0);
         
     }
