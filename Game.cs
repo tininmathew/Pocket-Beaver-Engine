@@ -53,7 +53,7 @@ public class Game : GameWindow
         GameObject multiObj = new GameObject("multy", ObjParser.LoadMesh("models/multi-object.obj"), mainGame, position: new Vector3(0,5,0), rotation: new Vector3(0,-90,0));
 
 
-        GameObject icon = new GameObject("icon", ObjParser.LoadMesh("./resources/code.png", MeshType.Bilboard), mainGame, position: new Vector3(0,5,3), rotation: new Vector3(90,0,0), parent: multiObj.Transform);
+        GameObject icon = new GameObject("icon", ObjParser.LoadMesh("./resources/code.png", MeshType.Sprite), mainGame, position: new Vector3(0,5,3), rotation: new Vector3(90,0,0), parent: multiObj.Transform);
         
         camera.Position = new Vector3( 0, 5, 5);
         CursorState = CursorState.Grabbed;

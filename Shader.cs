@@ -17,7 +17,7 @@ public class Shader
     {
         string[] VertexShaderSources = { 
             File.ReadAllText("./shaders/solidShader.vert"), 
-            File.ReadAllText("./shaders/bilboardShader.vert") 
+            File.ReadAllText("./shaders/spriteShader.vert") 
         };
         string[] FragmentShaderSources = { 
             File.ReadAllText("./shaders/solidShader.frag"), 
@@ -69,8 +69,8 @@ public class Shader
                     GL.AttachShader(_shaderProgram, VertexShaders[0]);
                     GL.AttachShader(_shaderProgram, FragmentShaders[0]);
                     break;
-                case MeshType.Bilboard:
-                    GL.AttachShader(_shaderProgram, VertexShaders[1]);
+                case MeshType.Sprite:
+                    GL.AttachShader(_shaderProgram, VertexShaders[0]);
                     GL.AttachShader(_shaderProgram, FragmentShaders[1]);
                     break;
             }
