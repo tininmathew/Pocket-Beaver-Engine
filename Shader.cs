@@ -16,8 +16,7 @@ public class Shader
     internal void CompileShaders() 
     {
         string[] VertexShaderSources = { 
-            File.ReadAllText("./shaders/solidShader.vert"), 
-            File.ReadAllText("./shaders/spriteShader.vert") 
+            File.ReadAllText("./shaders/solidShader.vert")
         };
         string[] FragmentShaderSources = { 
             File.ReadAllText("./shaders/solidShader.frag"), 
