@@ -27,7 +27,7 @@ public class Shader
         List<int> FragmentShaders = new();
         int success = 0;
 
-        // 1. Компиляция вертексных шейдеров
+        // вертексные шейдеры
         foreach(string i in VertexShaderSources) 
         {
             int vertexShader = GL.CreateShader(ShaderType.VertexShader);
@@ -41,7 +41,7 @@ public class Shader
             VertexShaders.Add(vertexShader);
         }
 
-        // 2. Компиляция фрагментных шейдеров
+        // фрагментные шейдеры
         foreach(string i in FragmentShaderSources) 
         {
             int fragmentShader = GL.CreateShader(ShaderType.FragmentShader);
@@ -55,13 +55,11 @@ public class Shader
             FragmentShaders.Add(fragmentShader);
         }
 
-        // 3. Создание и линковка программ
+        // програмы
         int meshTypeCount = Enum.GetValues(typeof(MeshType)).Length;
         for(int i = 0; i < meshTypeCount; i++) 
         {
             int _shaderProgram = GL.CreateProgram();
-            
-            // Назначаем шейдеры в зависимости от типа меша
             switch((MeshType)i) 
             {
                 case MeshType.Solid:
@@ -85,7 +83,6 @@ public class Shader
             shaderPrograms.Add((MeshType)i, _shaderProgram);
         }
 
-        // 4. Очистка шейдеров после линковки
         foreach(int shader in VertexShaders) { GL.DeleteShader(shader); }
         foreach(int shader in FragmentShaders) { GL.DeleteShader(shader); }
         foreach (var program in shaderPrograms)
@@ -94,10 +91,10 @@ public class Shader
             int location = GL.GetUniformLocation(program.Value, "texture0");
             if (location != -1)
             {
-                GL.Uniform1(location, 0); // Привязка к текстурному слоту 0
+                GL.Uniform1(location, 0); 
             }
         }
-        GL.UseProgram(0); // Сброс текущей программы
+        GL.UseProgram(0);
     }
 
     internal void Use(MeshType type) 
@@ -121,17 +118,9 @@ public class Shader
         GL.Uniform3(location, value.X, value.Y, value.Z);
     }
 
-    public void SetMatrix4(string name, Matrix4 matrix, string debug) 
+    public void SetMatrix4(string name, Matrix4 matrix) 
     {
         int location = GL.GetUniformLocation(currentShaderProgram, name);
-        // foreach(var i in shaderPrograms)
-        // {
-        //     if(i.Value == currentShaderProgram)
-        //     {
-        //         Console.WriteLine($"{debug} - {i.Key} {{{location}}}");
-        //         break;
-        //     }
-        // }
         GL.UniformMatrix4(location, false, ref matrix);
     }
 

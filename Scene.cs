@@ -9,6 +9,11 @@ public class Scene
     private List<GameObject> _objectsToRemove = new List<GameObject>();
     public GameObject? Selected { get; private set; }
 
+    public Scene(Shader Shader)
+    {
+        shader = Shader;
+    }
+
     public void Add(GameObject toAdd)
     {
         bool isNameInList = false;
@@ -97,14 +102,9 @@ public class Scene
 
         foreach (var obj in _objectsToRemove)
         {
-            // 1. Удаляем из основного списка сцены
             List.Remove(obj);
-
-            // 2. Освобождаем текстуры, VBO, VAO
             obj.Dispose(); 
         }
-
-        // Очищаем буфер удаления
         _objectsToRemove.Clear();
     }
 }

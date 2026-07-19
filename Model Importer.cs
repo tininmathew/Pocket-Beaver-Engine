@@ -20,7 +20,7 @@ public static class ObjParser
     static private Dictionary<string, int> MaterialNameToId = new();
     static private int _nextMaterialId = 0;
 
-    static private int _currentMaterialId = -1; // Изначально -1 (нет материала)
+    static private int _currentMaterialId = -1; 
     static private int _currentSubmeshStartIndex = 0;
     static private int _currentSubmeshIndexCount = 0;
     static private string pathToMtl = "";
@@ -89,7 +89,7 @@ public static class ObjParser
                         break;
 
                     case "f":
-                        // Защита: если полигоны идут до usemtl
+                        //полигоны идут до usemtl
                         if (_currentMaterialId == -1)
                         {
                             string defaultMat = "default_material";
@@ -111,7 +111,6 @@ public static class ObjParser
                             string[] data = parts[i].Split('/');
 
                             int posIndex = int.Parse(data[0]);
-                            // Обработка отрицательных индексов OBJ и приведение к 0-based
                             posIndex = posIndex < 0 ? positions.Count + posIndex : posIndex - 1;
 
                             int UVIndex = -1;
@@ -131,7 +130,7 @@ public static class ObjParser
                             Vertex vertex = new Vertex
                             {
                                 position = positions[posIndex],
-                                normal = normIndex != -1 ? normals[normIndex] : Vector3.UnitY, // Дефолтная нормаль
+                                normal = normIndex != -1 ? normals[normIndex] : Vector3.UnitY,
                                 uv = UVIndex!=-1 ? UVs[UVIndex] : Vector2.Zero
                             };
 
@@ -139,7 +138,6 @@ public static class ObjParser
                             faceIndices.Add((uint)(Vertices.Count - 1));
                         }
 
-                        // Добавляем индексы в буфер в виде треугольников
                         for (int i = 1; i < faceIndices.Count - 1; i++)
                         {
                             VertexIndices.Add(faceIndices[0]);
@@ -169,12 +167,11 @@ public static class ObjParser
         }
     }
 
-    // Изменено: Передаем Dictionary для синхронизации ID по имени
     private static Material[] LoadMTL(string filePath)
     {
         if (!File.Exists(filePath))
         {
-            // Если MTL нет, создаем массив заглушек на основе найденных в OBJ имен
+            // заглушки
             Material[] fallbacks = new Material[MaterialNameToId.Count];
             foreach (var kvp in MaterialNameToId)
             {
@@ -185,7 +182,7 @@ public static class ObjParser
 
         // Выделяем массив под точное количество материалов, найденных в OBJ
         Material[] materials = new Material[MaterialNameToId.Count];
-        Material currentMaterial = null;
+        Material? currentMaterial = null;
         int currentId = -1;
 
         foreach (var line in File.ReadLines(filePath))
@@ -201,7 +198,6 @@ public static class ObjParser
             {
                 case "newmtl":
                     string matName = parts[1];
-                    // Проверяем, используется ли этот материал в OBJ
                     if (MaterialNameToId.TryGetValue(matName, out currentId))
                     {
                         currentMaterial = new Material(matName);
@@ -209,7 +205,7 @@ public static class ObjParser
                     }
                     else
                     {
-                        currentMaterial = null; // Пропускаем, если в OBJ его нет
+                        currentMaterial = null;
                     }
                     break;
 
@@ -241,7 +237,7 @@ public static class ObjParser
             }
         }
 
-        // Заполняем пропуски дефолтными материалами (если в MTL не было описания)
+        // дефолт материалы
         foreach (var kvp in MaterialNameToId)
         {
             if (materials[kvp.Value] == null)

@@ -56,15 +56,12 @@ public class Mesh : IDisposable
 
         GL.BindVertexArray(_vao);
 
-        // Загружаем ВСЕ вершины модели в один VBO
         GL.BindBuffer(BufferTarget.ArrayBuffer, _vbo);
         GL.BufferData(BufferTarget.ArrayBuffer, vertices.Length * Marshal.SizeOf<Vertex>(), vertices, BufferUsageHint.StaticDraw);
 
-        // Загружаем ВСЕ индексы модели в один EBO
         GL.BindBuffer(BufferTarget.ElementArrayBuffer, _ebo);
         GL.BufferData(BufferTarget.ElementArrayBuffer, indices.Length * sizeof(uint), indices, BufferUsageHint.StaticDraw);
 
-        // Настройка атрибутов (остается как у вас)
         GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, Marshal.SizeOf<Vertex>(), 0);
         GL.EnableVertexAttribArray(0);
 
@@ -76,10 +73,10 @@ public class Mesh : IDisposable
 
         GL.BindVertexArray(0);
     }
-    public void Draw(Matrix4 model, string debug)
+    public void Draw(Matrix4 model)
     {
         Scene.shader.Use(type);
-        Scene.shader.SetMatrix4("model", model, debug);
+        Scene.shader.SetMatrix4("model", model);
         GL.BindVertexArray(_vao);
         if(type == MeshType.Solid)
         {
@@ -109,9 +106,9 @@ public class Mesh : IDisposable
                     // 3. Рисуем только часть индексов
                     GL.DrawElements(
                         PrimitiveType.Triangles,
-                        submesh.IndexCount,          // Сколько индексов нарисовать
+                        submesh.IndexCount,          // сколько индексов нарисовать
                         DrawElementsType.UnsignedInt,
-                        pointerOffset                // Откуда начать в EBO (в байтах!)
+                        pointerOffset                // откуда начать в EBO
                     );
                     GL.DepthMask(true);
                     GL.Disable(EnableCap.Blend);
@@ -133,10 +130,9 @@ public class Mesh : IDisposable
             GL.ActiveTexture(TextureUnit.Texture0);
             GL.BindTexture(TextureTarget.Texture2D, handle);
             
-            // Отключаем отсечение, так как билборд должен быть виден с обеих сторон
             GL.Disable(EnableCap.CullFace); 
             
-            // ИСПРАВЛЕНО: Раскомментируйте блендинг, так как спрайты обычно имеют прозрачные области
+            // поэксперементировать с полупрозрачными спрайтами
             //GL.Enable(EnableCap.Blend);
             //GL.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
             
@@ -147,9 +143,8 @@ public class Mesh : IDisposable
                 pointerOffset
             );
             
-            // ИСПРАВЛЕНО: Возвращаем состояние контекста OpenGL в исходное
             GL.Disable(EnableCap.Blend);
-            GL.Enable(EnableCap.CullFace); // Включаем обратно для Solid объектов!
+            GL.Enable(EnableCap.CullFace);
         }
         
         GL.BindVertexArray(0);
@@ -167,7 +162,6 @@ public class Mesh : IDisposable
     {
         if (!_disposed)
         {
-            // Важно: удаление ресурсов OpenGL должно происходить в главном потоке рендеринга!
             GL.DeleteVertexArray(_vao);
             GL.DeleteBuffer(_vbo);
             GL.DeleteBuffer(_ebo);
@@ -178,8 +172,6 @@ public class Mesh : IDisposable
 
     ~Mesh()
     {
-        // Предупреждение: OpenGL команды здесь могут вызвать краш, 
-        // если финализатор вызовется из другого потока.
-        // Поэтому всегда вызывайте Dispose вручную.
+        
     }
 }

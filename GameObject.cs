@@ -42,7 +42,7 @@ List<Script>? comps = null, Transform? parent = null)
     public void Render(Shader shader)
     {
         if(this.Mesh == null) return;
-        this.Mesh.Draw(this.Transform.ModelMatrix, Name);
+        this.Mesh.Draw(this.Transform.ModelMatrix);
     }
     public void AddComponent(Script toadd)
     {

@@ -30,15 +30,13 @@ public class Game : GameWindow
     {
         base.OnLoad();
         VSync = VSyncMode.On; 
-        mainGame = new Scene();
         shader = new Shader();
+        mainGame = new Scene(shader);
         GL.ClearColor(Constants.bgColor[0],Constants.bgColor[1],Constants.bgColor[2], Constants.bgColor[3]);
         GL.Enable(EnableCap.DepthTest);
         GL.Enable(EnableCap.CullFace); 
         GL.Enable(EnableCap.Blend);
         GL.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
- 
-        Scene.shader = shader;
         
         lights = new PointLight[]
         {
@@ -81,9 +79,9 @@ public class Game : GameWindow
         foreach(GameObject i in mainGame.List)
         {
             i.Render(shader);
-            shader.SetMatrix4("view", camera.GetViewMatrix(),"");
+            shader.SetMatrix4("view", camera.GetViewMatrix());
             shader.SetVector3("viewPos", camera.Position);
-            shader.SetMatrix4("projection",camera.Projection,"");
+            shader.SetMatrix4("projection",camera.Projection);
             i.Update((float)args.Time);
         }
         //render camera

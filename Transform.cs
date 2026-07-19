@@ -7,9 +7,6 @@ public class Transform
 {
     public Vector3 Position;
     public Vector3 WorldPosition;
-    /// <summary>
-    /// Radians rotation. For angles do the "SetAngles();"
-    /// </summary>
     public Quaternion Rotation;
     public Vector3 Scale = Vector3.One;
     public Transform? Parent;
