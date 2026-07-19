@@ -11,10 +11,6 @@ public class Rotater : Script
         direction = Vector3.Normalize(dir);
         speed = _speed;
     }
-    internal override void Start()
-    {
-        
-    }
     internal override void Update(float deltaTime)
     {
         gameObject.Transform.Rotation *= Quaternion.FromAxisAngle(direction, deltaTime * speed);

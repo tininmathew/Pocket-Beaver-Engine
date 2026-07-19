@@ -31,7 +31,7 @@ public class Game : GameWindow
         base.OnLoad();
         VSync = VSyncMode.On; 
         shader = new Shader();
-        mainGame = new Scene(shader);
+        mainGame = new Scene(shader, camera);
         GL.ClearColor(Constants.bgColor[0],Constants.bgColor[1],Constants.bgColor[2], Constants.bgColor[3]);
         GL.Enable(EnableCap.DepthTest);
         GL.Enable(EnableCap.CullFace); 
@@ -51,7 +51,8 @@ public class Game : GameWindow
         GameObject multiObj = new GameObject("multy", ObjParser.LoadMesh("models/multi-object.obj"), mainGame, position: new Vector3(0,5,0), rotation: new Vector3(0,-90,0));
 
 
-        GameObject icon = new GameObject("icon", ObjParser.LoadMesh("./resources/code.png", MeshType.Sprite), mainGame, position: new Vector3(0,5,3), rotation: new Vector3(90,0,0), parent: multiObj.Transform);
+        GameObject cross = new GameObject("cross", ObjParser.LoadMesh("./resources/cross.png", MeshType.UI), mainGame, 
+        position: new Vector3(0, 0, -1f), scale: new Vector3(32,32,0));
         
         camera.Position = new Vector3( 0, 5, 5);
         CursorState = CursorState.Grabbed;
@@ -68,23 +69,32 @@ public class Game : GameWindow
         input.Mouse();
         input.InputCheck();
         camera.Position += input.GetMoveDirection() * speed * (float)e.Time;
+        foreach(GameObject i in mainGame.List)
+        {
+            i.Update((float)e.Time);
+        }
     }
     protected override void OnRenderFrame(FrameEventArgs args)
     {
         base.OnRenderFrame(args);
         GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
-        //render objects
         shader.SetLights(lights);
         foreach(GameObject i in mainGame.List)
         {
             i.Render(shader);
             shader.SetMatrix4("view", camera.GetViewMatrix());
             shader.SetVector3("viewPos", camera.Position);
-            shader.SetMatrix4("projection",camera.Projection);
-            i.Update((float)args.Time);
+            if(i.Mesh?.type == MeshType.UI)
+            {
+                shader.SetMatrix4("projection",camera.OrthoProjection);
+            }
+            else
+            {
+                shader.SetMatrix4("projection",camera.Projection);
+            }
+            
         }
-        //render camera
         
 
         SwapBuffers();

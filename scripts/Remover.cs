@@ -7,10 +7,6 @@ public class Remover : Script
     {
         timer = time;
     }
-    internal override void Start()
-    {
-        
-    }
     internal override void Update(float deltaTime)
     {
         timer -= deltaTime;

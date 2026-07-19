@@ -10,6 +10,6 @@ public abstract class Script
     }
     protected GameObject gameObject;
     protected Scene scene;
-    internal abstract void Start();
-    internal abstract void Update(float deltaTime);
+    internal virtual void Start(){}
+    internal virtual void Update(float deltaTime){}
 }

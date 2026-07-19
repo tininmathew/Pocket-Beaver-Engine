@@ -7,7 +7,8 @@ namespace Engine;
 public enum MeshType
 {
     Solid,
-    Sprite
+    Sprite,
+    UI
 }
 
 public class Mesh : IDisposable

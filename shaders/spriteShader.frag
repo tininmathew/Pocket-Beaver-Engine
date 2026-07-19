@@ -8,8 +8,6 @@ struct Light {
     float intensity;
 };
 
-in vec3 normal;
-in vec3 FragPos;
 in vec2 texCoord;
 
 uniform vec3 diffuse;
@@ -18,8 +16,6 @@ uniform sampler2D texture0;
 
 uniform vec3 viewPos;
 
-uniform Light lights[P_LIGHT_COUNT];
-uniform Light dirLight;
 
 out vec4 FragColor;
 

@@ -16,7 +16,8 @@ public class Shader
     internal void CompileShaders() 
     {
         string[] VertexShaderSources = { 
-            File.ReadAllText("./shaders/solidShader.vert")
+            File.ReadAllText("./shaders/solidShader.vert"),
+            File.ReadAllText("./shaders/UIShader.vert")
         };
         string[] FragmentShaderSources = { 
             File.ReadAllText("./shaders/solidShader.frag"), 
@@ -68,6 +69,10 @@ public class Shader
                     break;
                 case MeshType.Sprite:
                     GL.AttachShader(_shaderProgram, VertexShaders[0]);
+                    GL.AttachShader(_shaderProgram, FragmentShaders[1]);
+                    break;
+                case MeshType.UI:
+                    GL.AttachShader(_shaderProgram, VertexShaders[1]);
                     GL.AttachShader(_shaderProgram, FragmentShaders[1]);
                     break;
             }

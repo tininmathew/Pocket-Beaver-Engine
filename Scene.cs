@@ -6,12 +6,14 @@ public class Scene
 {
     public List<GameObject> List {get;set;} = new List<GameObject>();
     public static Shader shader;
+    public static Camera camera {get; private set;}
     private List<GameObject> _objectsToRemove = new List<GameObject>();
     public GameObject? Selected { get; private set; }
 
-    public Scene(Shader Shader)
+    public Scene(Shader Shader, Camera Camera)
     {
         shader = Shader;
+        camera = Camera;
     }
 
     public void Add(GameObject toAdd)

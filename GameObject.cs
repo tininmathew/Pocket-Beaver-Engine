@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using Engine.Scripts;
 using OpenTK.Mathematics;
 
 namespace Engine;
@@ -51,6 +52,20 @@ List<Script>? comps = null, Transform? parent = null)
         Components.Add(toadd);
         toadd.Set(this, currentScene);
         toadd.Start();
+    }
+    public Script? GetComponent(Script tofind)
+    {
+        if(Components == null) return null;
+        Script? Out = null;
+        foreach(Script i in Components)
+        {
+            if(i.GetType() == tofind.GetType())
+            {
+                Out = i;
+                break;
+            }
+        }
+        return Out;
     }
     public void Destroy()
     {
