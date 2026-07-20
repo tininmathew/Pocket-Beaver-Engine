@@ -15,8 +15,9 @@ internal class Program
         var nativeSettings = new NativeWindowSettings()
         {
             Title = Constants.WindowName,
-            ClientSize = new OpenTK.Mathematics.Vector2i((int)Constants.ScreenSize.X, (int)Constants.ScreenSize.Y),
-            WindowState = WindowState.Maximized, 
+            ClientSize = new Vector2i((int)Constants.ScreenSize.X, (int)Constants.ScreenSize.Y),
+            WindowState = WindowState.Fullscreen, 
+            NumberOfSamples = 4 // MSAA 4 
         };
 
         using var window = new Game(gameSettings, nativeSettings);

@@ -85,13 +85,13 @@ public class InputManager
         }
         if (e.Key == Keys.P)
         {
-            if(GL.IsEnabled(EnableCap.CullFace))
+            if(GL.IsEnabled(EnableCap.Multisample))
             {
-                GL.Disable(EnableCap.CullFace); 
+                GL.Disable(EnableCap.Multisample); 
             }
             else
             {
-                GL.Enable(EnableCap.CullFace); 
+                GL.Enable(EnableCap.Multisample); 
             }
         }
         if (e.Key == Keys.G)

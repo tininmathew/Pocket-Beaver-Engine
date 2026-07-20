@@ -37,6 +37,7 @@ public class Game : GameWindow
         GL.Enable(EnableCap.CullFace); 
         GL.Enable(EnableCap.Blend);
         GL.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
+        GL.Enable(EnableCap.Multisample);
         
         lights = new PointLight[]
         {
@@ -53,6 +54,9 @@ public class Game : GameWindow
 
         GameObject cross = new GameObject("cross", ObjParser.LoadMesh("./resources/cross.png", MeshType.UI), mainGame, 
         position: new Vector3(0, 0, -1f), scale: new Vector3(32,32,0));
+        GameObject Text = new GameObject("TEXT", ObjParser.LoadMesh("resources/fallback texture.bmp", MeshType.UI), mainGame, 
+        position: new Vector3(-1800/2, -980/2, -1f));
+        Text.AddComponent(new Text("Text"));
         
         camera.Position = new Vector3( 0, 5, 5);
         CursorState = CursorState.Grabbed;

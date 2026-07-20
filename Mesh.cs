@@ -17,7 +17,7 @@ public class Mesh : IDisposable
     private readonly int _vbo;
     private readonly int _ebo;
     
-    public MeshType type { get; private set; }
+    public MeshType type { get; set; }
     public Submesh[] submeshes;
     public Material[] materials;
     public readonly bool IsTransparent = false;
