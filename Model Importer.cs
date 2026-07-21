@@ -301,4 +301,9 @@ public static class ObjParser
             type
         );
     }
+    public static Submesh LoadChar(char toLoad)
+    {
+        Mesh loaded = LoadMesh($"resources/font/{toLoad}.png", MeshType.UI);
+        return loaded.submeshes[0];
+    }
 }

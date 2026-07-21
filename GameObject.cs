@@ -53,13 +53,13 @@ List<Script>? comps = null, Transform? parent = null)
         toadd.Set(this, currentScene);
         toadd.Start();
     }
-    public Script? GetComponent(Script tofind)
+    public Script? GetComponent(System.Type tofind)
     {
         if(Components == null) return null;
         Script? Out = null;
         foreach(Script i in Components)
         {
-            if(i.GetType() == tofind.GetType())
+            if(i.GetType() == tofind)
             {
                 Out = i;
                 break;
@@ -73,6 +73,7 @@ List<Script>? comps = null, Transform? parent = null)
     }
     public void Dispose()
     {
+        this.Transform.Parent = null;
         if(this.Mesh != null) this.Mesh.Dispose();
     }
 }

@@ -34,8 +34,8 @@ public class Game : GameWindow
         mainGame = new Scene(shader, camera);
         GL.ClearColor(Constants.bgColor[0],Constants.bgColor[1],Constants.bgColor[2], Constants.bgColor[3]);
         GL.Enable(EnableCap.DepthTest);
-        GL.Enable(EnableCap.CullFace); 
         GL.Enable(EnableCap.Blend);
+        GL.Enable(EnableCap.Dither);
         GL.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
         GL.Enable(EnableCap.Multisample);
         
@@ -46,7 +46,7 @@ public class Game : GameWindow
         DirLight.Rotation = new Vector3(-0.5f,-1,0);
         DirLight.Intensity = 0.41f;
         DirLight.Color = new Vector3(1,1,1);
-        GameObject map = new GameObject("plane", ObjParser.LoadMesh("./models/textureField.obj"), mainGame, scale: new Vector3(10));
+        GameObject map = new GameObject("plane", ObjParser.LoadMesh("models/textureField.obj"), mainGame, scale: new Vector3(10));
         
 
         GameObject multiObj = new GameObject("multy", ObjParser.LoadMesh("models/multi-object.obj"), mainGame, position: new Vector3(0,5,0), rotation: new Vector3(0,-90,0));

@@ -3,6 +3,7 @@ using OpenTK.Input;
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using OpenTK.Windowing.Common;
+using Engine.Scripts;
 
 namespace Engine;
 
@@ -97,14 +98,17 @@ public class InputManager
         if (e.Key == Keys.G)
         {
             mode = TranslateMode.Moving;
+            (scene.Find("TEXT").GetComponent(typeof(Text)) as Text)?.TEXT ="Moving Mode";
         }
         if (e.Key == Keys.R)
         {
             mode = TranslateMode.Rotating;
+            (scene.Find("TEXT").GetComponent(typeof(Text)) as Text)?.TEXT ="Rotating Mode";
         }
         if (e.Key == Keys.S)
         {
             mode = TranslateMode.Scaling;
+            (scene.Find("TEXT").GetComponent(typeof(Text)) as Text)?.TEXT ="Scaling Mode";
         }
         if (e.Key == Keys.Tab)
         {

@@ -8,8 +8,9 @@ public class Scene
     public static Shader shader;
     public static Camera camera {get; private set;}
     private List<GameObject> _objectsToRemove = new List<GameObject>();
+    private List<GameObject> _objectsToAdd = new();
     public GameObject? Selected { get; private set; }
-
+    
     public Scene(Shader Shader, Camera Camera)
     {
         shader = Shader;
@@ -18,30 +19,7 @@ public class Scene
 
     public void Add(GameObject toAdd)
     {
-        bool isNameInList = false;
-        string startName = toAdd.Name;
-        for(int i = 0; true; i++)
-        {
-            foreach(GameObject x in List)
-            {
-                if(toAdd.Name == x.Name)
-                {
-                    isNameInList = true;
-                    break;
-                }
-            }
-            if(!isNameInList)
-            {
-                List.Add(toAdd);
-                break;
-            }
-            else
-            {
-                toAdd.Name = startName + i.ToString();
-            }
-        }
-        var sortedList = List.OrderBy(x => x.Mesh?.IsTransparent).ToList();
-        this.List = sortedList;
+        _objectsToAdd.Add(toAdd);
     }
     public GameObject Find(string name)
     {
@@ -100,6 +78,14 @@ public class Scene
 
     public void Cleanup()
     {
+        if (_objectsToAdd.Count > 0)
+        {
+            List.AddRange(_objectsToAdd);
+            var sortedList = List.OrderBy(x => x.Mesh?.IsTransparent).ToList();
+            this.List = sortedList;
+            _objectsToAdd.Clear();
+        }
+
         if (_objectsToRemove.Count == 0) return;
 
         foreach (var obj in _objectsToRemove)

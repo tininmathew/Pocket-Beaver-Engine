@@ -166,6 +166,11 @@ public class Mesh : IDisposable
             GL.DeleteVertexArray(_vao);
             GL.DeleteBuffer(_vbo);
             GL.DeleteBuffer(_ebo);
+            foreach(Material i in materials)
+            {
+                GL.DeleteTexture(i.Texture);
+            }
+            
 
             _disposed = true;
         }
